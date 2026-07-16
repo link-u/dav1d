@@ -45,7 +45,9 @@ void checkasm_check_msac(void);
 void checkasm_check_pal(void);
 void checkasm_check_refmvs(void);
 decl_check_bitfns(void checkasm_check_cdef);
+#if CONFIG_FILMGRAIN
 decl_check_bitfns(void checkasm_check_filmgrain);
+#endif
 decl_check_bitfns(void checkasm_check_ipred);
 decl_check_bitfns(void checkasm_check_itx);
 decl_check_bitfns(void checkasm_check_loopfilter);

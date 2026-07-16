@@ -40,6 +40,11 @@ option('logging',
     value: true,
     description: 'Print error log messages using the provided callback function')
 
+option('enable_filmgrain',
+    type: 'boolean',
+    value: true,
+    description: 'Enable film grain synthesis DSP and application')
+
 option('testdata_tests',
     type: 'boolean',
     value: false,

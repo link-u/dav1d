@@ -42,7 +42,9 @@
 #include "src/decode.h"
 #include "src/dequant_tables.h"
 #include "src/env.h"
+#if CONFIG_FILMGRAIN
 #include "src/filmgrain.h"
+#endif
 #include "src/log.h"
 #include "src/qm.h"
 #include "src/recon.h"
@@ -3391,6 +3393,12 @@ int dav1d_submit_frame(Dav1dContext *const c) {
         Dav1dDSPContext *const dsp = &c->dsp[f->seq_hdr->hbd];
 
         switch (bpc) {
+#if CONFIG_FILMGRAIN
+#define CONFIG_FILMGRAIN_INIT(bd) \
+            dav1d_film_grain_dsp_init_##bd##bpc(&dsp->fg);
+#else
+#define CONFIG_FILMGRAIN_INIT(bd)
+#endif
 #define assign_bitdepth_case(bd) \
             dav1d_cdef_dsp_init_##bd##bpc(&dsp->cdef); \
             dav1d_intra_pred_dsp_init_##bd##bpc(&dsp->ipred); \
@@ -3398,7 +3406,7 @@ int dav1d_submit_frame(Dav1dContext *const c) {
             dav1d_loop_filter_dsp_init_##bd##bpc(&dsp->lf); \
             dav1d_loop_restoration_dsp_init_##bd##bpc(&dsp->lr, bpc); \
             dav1d_mc_dsp_init_##bd##bpc(&dsp->mc); \
-            dav1d_film_grain_dsp_init_##bd##bpc(&dsp->fg); \
+            CONFIG_FILMGRAIN_INIT(bd) \
             break
 #if CONFIG_8BPC
         case 8:
@@ -3410,6 +3418,7 @@ int dav1d_submit_frame(Dav1dContext *const c) {
             assign_bitdepth_case(16);
 #endif
 #undef assign_bitdepth_case
+#undef CONFIG_FILMGRAIN_INIT
         default:
             dav1d_log(c, "Compiled without support for %d-bit decoding\n",
                     8 + 2 * f->seq_hdr->hbd);

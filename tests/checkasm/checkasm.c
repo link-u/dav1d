@@ -41,7 +41,9 @@ static const CheckasmTest tests[] = {
     { "refmvs", checkasm_check_refmvs },
 #if CONFIG_8BPC
     { "cdef_8bpc", checkasm_check_cdef_8bpc },
+#if CONFIG_FILMGRAIN
     { "filmgrain_8bpc", checkasm_check_filmgrain_8bpc },
+#endif
     { "ipred_8bpc", checkasm_check_ipred_8bpc },
     { "itx_8bpc", checkasm_check_itx_8bpc },
     { "loopfilter_8bpc", checkasm_check_loopfilter_8bpc },
@@ -50,7 +52,9 @@ static const CheckasmTest tests[] = {
 #endif
 #if CONFIG_16BPC
     { "cdef_16bpc", checkasm_check_cdef_16bpc },
+#if CONFIG_FILMGRAIN
     { "filmgrain_16bpc", checkasm_check_filmgrain_16bpc },
+#endif
     { "ipred_16bpc", checkasm_check_ipred_16bpc },
     { "itx_16bpc", checkasm_check_itx_16bpc },
     { "loopfilter_16bpc", checkasm_check_loopfilter_16bpc },

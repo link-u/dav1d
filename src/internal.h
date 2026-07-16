@@ -43,7 +43,9 @@ typedef struct Dav1dTask Dav1dTask;
 #include "src/cdf.h"
 #include "src/data.h"
 #include "src/env.h"
+#if CONFIG_FILMGRAIN
 #include "src/filmgrain.h"
+#endif
 #include "src/intra_edge.h"
 #include "src/ipred.h"
 #include "src/itx.h"
@@ -60,7 +62,9 @@ typedef struct Dav1dTask Dav1dTask;
 #include "src/thread.h"
 
 typedef struct Dav1dDSPContext {
+#if CONFIG_FILMGRAIN
     Dav1dFilmGrainDSPContext fg;
+#endif
     Dav1dIntraPredDSPContext ipred;
     Dav1dMCDSPContext mc;
     Dav1dInvTxfmDSPContext itx;
@@ -86,8 +90,10 @@ enum TaskType {
     DAV1D_TASK_TYPE_SUPER_RESOLUTION,
     DAV1D_TASK_TYPE_LOOP_RESTORATION,
     DAV1D_TASK_TYPE_RECONSTRUCTION_PROGRESS,
+#if CONFIG_FILMGRAIN
     DAV1D_TASK_TYPE_FG_PREP,
     DAV1D_TASK_TYPE_FG_APPLY,
+#endif
 };
 
 struct Dav1dContext {
@@ -141,6 +147,7 @@ struct Dav1dContext {
         // See src/thread_task.c:reset_task_cur().
         atomic_uint reset_task_cur;
         atomic_int cond_signaled;
+#if CONFIG_FILMGRAIN
         struct {
             int exec, finished;
             pthread_cond_t cond;
@@ -159,6 +166,7 @@ struct Dav1dContext {
                 };
             };
         } delayed_fg;
+#endif
         int inited;
     } task_thread;
 

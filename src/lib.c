@@ -41,7 +41,9 @@
 #include "common/validate.h"
 
 #include "src/cpu.h"
+#if CONFIG_FILMGRAIN
 #include "src/fg_apply.h"
+#endif
 #include "src/internal.h"
 #include "src/log.h"
 #include "src/obu.h"
@@ -71,7 +73,11 @@ COLD unsigned dav1d_version_api(void) {
 COLD void dav1d_default_settings(Dav1dSettings *const s) {
     s->n_threads = 0;
     s->max_frame_delay = 0;
+#if CONFIG_FILMGRAIN
     s->apply_grain = 1;
+#else
+    s->apply_grain = 0;
+#endif
     s->allocator.cookie = NULL;
     s->allocator.alloc_picture_callback = dav1d_default_picture_alloc;
     s->allocator.release_picture_callback = dav1d_default_picture_release;
@@ -168,7 +174,11 @@ COLD int dav1d_open(Dav1dContext **const c_out, const Dav1dSettings *const s) {
 
     c->allocator = s->allocator;
     c->logger = s->logger;
+#if CONFIG_FILMGRAIN
     c->apply_grain = s->apply_grain;
+#else
+    c->apply_grain = 0;
+#endif
     c->operating_point = s->operating_point;
     c->all_layers = s->all_layers;
     c->frame_size_limit = s->frame_size_limit;
@@ -230,11 +240,13 @@ COLD int dav1d_open(Dav1dContext **const c_out, const Dav1dSettings *const s) {
             pthread_mutex_destroy(&c->task_thread.lock);
             goto error;
         }
+#if CONFIG_FILMGRAIN
         if (pthread_cond_init(&c->task_thread.delayed_fg.cond, NULL)) {
             pthread_cond_destroy(&c->task_thread.cond);
             pthread_mutex_destroy(&c->task_thread.lock);
             goto error;
         }
+#endif
         c->task_thread.cur = c->n_fc;
         atomic_init(&c->task_thread.reset_task_cur, UINT_MAX);
         atomic_init(&c->task_thread.cond_signaled, 0);
@@ -489,6 +501,10 @@ int dav1d_apply_grain(Dav1dContext *const c, Dav1dPicture *const out,
     validate_input_or_ret(out != NULL, DAV1D_ERR(EINVAL));
     validate_input_or_ret(in != NULL, DAV1D_ERR(EINVAL));
 
+#if !CONFIG_FILMGRAIN
+    dav1d_picture_ref(out, in);
+    return 0;
+#else
     if (!has_grain(in)) {
         dav1d_picture_ref(out, in);
         return 0;
@@ -521,6 +537,7 @@ int dav1d_apply_grain(Dav1dContext *const c, Dav1dPicture *const out,
 error:
     dav1d_picture_unref_internal(out);
     return res;
+#endif
 }
 
 void dav1d_flush(Dav1dContext *const c) {
@@ -628,7 +645,9 @@ static COLD void close_internal(Dav1dContext **const c_out, int flush) {
                 pthread_cond_destroy(&pf->task_thread.td.cond);
                 pthread_mutex_destroy(&pf->task_thread.td.lock);
             }
+#if CONFIG_FILMGRAIN
             pthread_cond_destroy(&ttd->delayed_fg.cond);
+#endif
             pthread_cond_destroy(&ttd->cond);
             pthread_mutex_destroy(&ttd->lock);
         }

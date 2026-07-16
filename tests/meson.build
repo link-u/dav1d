@@ -51,13 +51,18 @@ if is_asm_enabled and checkasm_dependency.found()
 
     checkasm_tmpl_sources = files(
         'checkasm/cdef.c',
-        'checkasm/filmgrain.c',
         'checkasm/ipred.c',
         'checkasm/itx.c',
         'checkasm/loopfilter.c',
         'checkasm/looprestoration.c',
         'checkasm/mc.c',
     )
+
+    if get_option('enable_filmgrain')
+        checkasm_tmpl_sources += files(
+            'checkasm/filmgrain.c',
+        )
+    endif
 
     checkasm_bitdepth_objs = []
     foreach bitdepth : dav1d_bitdepths

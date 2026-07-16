@@ -30,7 +30,9 @@
 #include "common/frame.h"
 
 #include "src/thread_task.h"
+#if CONFIG_FILMGRAIN
 #include "src/fg_apply.h"
+#endif
 
 // This function resets the cur pointer to the first frame theoretically
 // executable after a task completed (ie. each time we update some progress or
@@ -352,6 +354,7 @@ void dav1d_task_frame_init(Dav1dFrameContext *const f) {
     insert_task(f, t, 1);
 }
 
+#if CONFIG_FILMGRAIN
 void dav1d_task_delayed_fg(Dav1dContext *const c, Dav1dPicture *const out,
                            const Dav1dPicture *const in)
 {
@@ -370,6 +373,7 @@ void dav1d_task_delayed_fg(Dav1dContext *const c, Dav1dPicture *const out,
     } while (!ttd->delayed_fg.finished);
     pthread_mutex_unlock(&ttd->lock);
 }
+#endif
 
 static inline int ensure_progress(struct TaskThreadData *const ttd,
                                   Dav1dFrameContext *const f,
@@ -468,6 +472,7 @@ static inline void abort_frame(Dav1dFrameContext *const f, const int error) {
     pthread_cond_signal(&f->task_thread.cond);
 }
 
+#if CONFIG_FILMGRAIN
 static inline void delayed_fg_task(const Dav1dContext *const c,
                                    struct TaskThreadData *const ttd)
 {
@@ -552,6 +557,7 @@ static inline void delayed_fg_task(const Dav1dContext *const c,
     default: abort();
     }
 }
+#endif
 
 void *dav1d_worker_task(void *data) {
     Dav1dTaskContext *const tc = data;
@@ -566,10 +572,12 @@ void *dav1d_worker_task(void *data) {
         if (atomic_load(c->flush)) goto park;
 
         merge_pending(c);
+#if CONFIG_FILMGRAIN
         if (ttd->delayed_fg.exec) { // run delayed film grain first
             delayed_fg_task(c, ttd);
             continue;
         }
+#endif
         Dav1dFrameContext *f;
         Dav1dTask *t, *prev_t = NULL;
         if (c->n_fc > 1) { // run init tasks second

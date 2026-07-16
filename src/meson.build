@@ -61,8 +61,6 @@ libdav1d_sources = files(
 libdav1d_tmpl_sources = files(
     'cdef_apply_tmpl.c',
     'cdef_tmpl.c',
-    'fg_apply_tmpl.c',
-    'filmgrain_tmpl.c',
     'ipred_prepare_tmpl.c',
     'ipred_tmpl.c',
     'itx_tmpl.c',
@@ -73,6 +71,13 @@ libdav1d_tmpl_sources = files(
     'mc_tmpl.c',
     'recon_tmpl.c',
 )
+
+if get_option('enable_filmgrain')
+    libdav1d_tmpl_sources += files(
+        'fg_apply_tmpl.c',
+        'filmgrain_tmpl.c',
+    )
+endif
 
 libdav1d_arch_tmpl_sources = {}
 
@@ -102,19 +107,22 @@ if is_asm_enabled
             if dav1d_bitdepths.contains('8')
                 libdav1d_sources_asm += files(
                     'arm/64/cdef.S',
-                    'arm/64/filmgrain.S',
                     'arm/64/ipred.S',
                     'arm/64/loopfilter.S',
                     'arm/64/looprestoration.S',
                     'arm/64/mc.S',
                     'arm/64/mc_dotprod.S',
                 )
+                if get_option('enable_filmgrain')
+                    libdav1d_sources_asm += files(
+                        'arm/64/filmgrain.S',
+                    )
+                endif
             endif
 
             if dav1d_bitdepths.contains('16')
                 libdav1d_sources_asm += files(
                     'arm/64/cdef16.S',
-                    'arm/64/filmgrain16.S',
                     'arm/64/ipred16.S',
                     'arm/64/itx16.S',
                     'arm/64/loopfilter16.S',
@@ -122,6 +130,11 @@ if is_asm_enabled
                     'arm/64/mc16.S',
                     'arm/64/mc16_sve.S',
                 )
+                if get_option('enable_filmgrain')
+                    libdav1d_sources_asm += files(
+                        'arm/64/filmgrain16.S',
+                    )
+                endif
             endif
         elif host_machine.cpu_family().startswith('arm')
             libdav1d_sources_asm = files(
@@ -135,24 +148,32 @@ if is_asm_enabled
             if dav1d_bitdepths.contains('8')
                 libdav1d_sources_asm += files(
                     'arm/32/cdef.S',
-                    'arm/32/filmgrain.S',
                     'arm/32/ipred.S',
                     'arm/32/loopfilter.S',
                     'arm/32/looprestoration.S',
                     'arm/32/mc.S',
                 )
+                if get_option('enable_filmgrain')
+                    libdav1d_sources_asm += files(
+                        'arm/32/filmgrain.S',
+                    )
+                endif
             endif
 
             if dav1d_bitdepths.contains('16')
                 libdav1d_sources_asm += files(
                     'arm/32/cdef16.S',
-                    'arm/32/filmgrain16.S',
                     'arm/32/ipred16.S',
                     'arm/32/itx16.S',
                     'arm/32/loopfilter16.S',
                     'arm/32/looprestoration16.S',
                     'arm/32/mc16.S',
                 )
+                if get_option('enable_filmgrain')
+                    libdav1d_sources_asm += files(
+                        'arm/32/filmgrain16.S',
+                    )
+                endif
             endif
         endif
 
@@ -183,48 +204,56 @@ if is_asm_enabled
         if dav1d_bitdepths.contains('8')
             libdav1d_sources_asm += files(
                 'x86/cdef_avx512.asm',
-                'x86/filmgrain_avx512.asm',
                 'x86/ipred_avx512.asm',
                 'x86/loopfilter_avx512.asm',
                 'x86/looprestoration_avx512.asm',
                 'x86/mc_avx512.asm',
-                'x86/filmgrain_avx2.asm',
                 'x86/ipred_avx2.asm',
                 'x86/loopfilter_avx2.asm',
                 'x86/looprestoration_avx2.asm',
                 'x86/mc_avx2.asm',
-                'x86/filmgrain_sse.asm',
                 'x86/ipred_sse.asm',
                 'x86/loopfilter_sse.asm',
                 'x86/looprestoration_sse.asm',
                 'x86/mc_sse.asm',
             )
+            if get_option('enable_filmgrain')
+                libdav1d_sources_asm += files(
+                    'x86/filmgrain_avx512.asm',
+                    'x86/filmgrain_avx2.asm',
+                    'x86/filmgrain_sse.asm',
+                )
+            endif
         endif
 
         if dav1d_bitdepths.contains('16')
             libdav1d_sources_asm += files(
                 'x86/cdef16_avx512.asm',
-                'x86/filmgrain16_avx512.asm',
                 'x86/ipred16_avx512.asm',
                 'x86/itx16_avx512.asm',
                 'x86/loopfilter16_avx512.asm',
                 'x86/looprestoration16_avx512.asm',
                 'x86/mc16_avx512.asm',
                 'x86/cdef16_avx2.asm',
-                'x86/filmgrain16_avx2.asm',
                 'x86/ipred16_avx2.asm',
                 'x86/itx16_avx2.asm',
                 'x86/loopfilter16_avx2.asm',
                 'x86/looprestoration16_avx2.asm',
                 'x86/mc16_avx2.asm',
                 'x86/cdef16_sse.asm',
-                'x86/filmgrain16_sse.asm',
                 'x86/ipred16_sse.asm',
                 'x86/itx16_sse.asm',
                 'x86/loopfilter16_sse.asm',
                 'x86/looprestoration16_sse.asm',
                 'x86/mc16_sse.asm',
             )
+            if get_option('enable_filmgrain')
+                libdav1d_sources_asm += files(
+                    'x86/filmgrain16_avx512.asm',
+                    'x86/filmgrain16_avx2.asm',
+                    'x86/filmgrain16_sse.asm',
+                )
+            endif
         endif
 
         # Compile the ASM sources with NASM
@@ -277,20 +306,28 @@ if is_asm_enabled
             if dav1d_bitdepths.contains('8')
                 libdav1d_sources += files(
                     'riscv/64/cdef.S',
-                    'riscv/64/filmgrain.S',
                     'riscv/64/ipred.S',
                     'riscv/64/itx.S',
                     'riscv/64/mc.S',
                 )
+                if get_option('enable_filmgrain')
+                    libdav1d_sources += files(
+                        'riscv/64/filmgrain.S',
+                    )
+                endif
             endif
 
             if dav1d_bitdepths.contains('16')
                 libdav1d_sources += files(
                     'riscv/64/cdef16.S',
-                    'riscv/64/filmgrain16.S',
                     'riscv/64/ipred16.S',
                     'riscv/64/mc16.S',
                 )
+                if get_option('enable_filmgrain')
+                    libdav1d_sources += files(
+                        'riscv/64/filmgrain16.S',
+                    )
+                endif
             endif
         endif
     endif

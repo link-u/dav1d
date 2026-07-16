@@ -39,7 +39,9 @@
 int dav1d_task_create_tile_sbrow(Dav1dFrameContext *f, int pass, int cond_signal);
 void dav1d_task_frame_init(Dav1dFrameContext *f);
 
+#if CONFIG_FILMGRAIN
 void dav1d_task_delayed_fg(Dav1dContext *c, Dav1dPicture *out, const Dav1dPicture *in);
+#endif
 
 void *dav1d_worker_task(void *data);
 

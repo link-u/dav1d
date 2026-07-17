@@ -50,6 +50,11 @@ option('enable_422_444',
     value: true,
     description: 'Enable YUV 4:2:2 and 4:4:4 pixel layouts (disable for 4:0:0/4:2:0 only)')
 
+option('enable_frame_delay',
+    type: 'boolean',
+    value: true,
+    description: 'Allow multi-frame decode buffering (n_fc > 1). Disable to force max_frame_delay=1')
+
 option('testdata_tests',
     type: 'boolean',
     value: false,

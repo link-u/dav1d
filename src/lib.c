@@ -72,7 +72,11 @@ COLD unsigned dav1d_version_api(void) {
 
 COLD void dav1d_default_settings(Dav1dSettings *const s) {
     s->n_threads = 0;
+#if CONFIG_FRAME_DELAY
     s->max_frame_delay = 0;
+#else
+    s->max_frame_delay = 1;
+#endif
 #if CONFIG_FILMGRAIN
     s->apply_grain = 1;
 #else
@@ -115,6 +119,7 @@ static COLD size_t get_stack_size_internal(const pthread_attr_t *const thread_at
 static COLD void get_num_threads(Dav1dContext *const c, const Dav1dSettings *const s,
                                  unsigned *n_tc, unsigned *n_fc)
 {
+#if CONFIG_FRAME_DELAY
     /* ceil(sqrt(n)) */
     static const uint8_t fc_lut[49] = {
         1,                                     /*     1 */
@@ -125,10 +130,15 @@ static COLD void get_num_threads(Dav1dContext *const c, const Dav1dSettings *con
         6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,       /* 26-36 */
         7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, /* 37-49 */
     };
+#endif
     *n_tc = s->n_threads ? s->n_threads :
         iclip(dav1d_num_logical_processors(c), 1, DAV1D_MAX_THREADS);
+#if CONFIG_FRAME_DELAY
     *n_fc = s->max_frame_delay ? umin(s->max_frame_delay, *n_tc) :
             *n_tc < 50 ? fc_lut[*n_tc - 1] : 8; // min(8, ceil(sqrt(n)))
+#else
+    *n_fc = 1;
+#endif
 }
 
 COLD int dav1d_get_frame_delay(const Dav1dSettings *const s) {
@@ -153,6 +163,9 @@ COLD int dav1d_open(Dav1dContext **const c_out, const Dav1dSettings *const s) {
                           s->n_threads <= DAV1D_MAX_THREADS, DAV1D_ERR(EINVAL));
     validate_input_or_ret(s->max_frame_delay >= 0 &&
                           s->max_frame_delay <= DAV1D_MAX_FRAME_DELAY, DAV1D_ERR(EINVAL));
+#if !CONFIG_FRAME_DELAY
+    validate_input_or_ret(s->max_frame_delay <= 1, DAV1D_ERR(EINVAL));
+#endif
     validate_input_or_ret(s->allocator.alloc_picture_callback != NULL,
                           DAV1D_ERR(EINVAL));
     validate_input_or_ret(s->allocator.release_picture_callback != NULL,

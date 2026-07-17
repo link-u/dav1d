@@ -94,6 +94,9 @@ cdata.set10('CONFIG_422_444', get_option('enable_422_444'))
 cdata_asm.set10('CONFIG_422_444', get_option('enable_422_444'))
 cdata_asm.set10('CONFIG_FILMGRAIN', get_option('enable_filmgrain'))
 
+# Multi-frame decode buffering (out_delayed / n_fc > 1)
+cdata.set10('CONFIG_FRAME_DELAY', get_option('enable_frame_delay'))
+
 #
 # OS/Compiler checks and defines
 #

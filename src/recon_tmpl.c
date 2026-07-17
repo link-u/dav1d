@@ -44,7 +44,9 @@
 #include "src/recon.h"
 #include "src/scan.h"
 #include "src/tables.h"
+#if CONFIG_COMPOUND
 #include "src/wedge.h"
+#endif
 
 static inline unsigned read_golomb(MsacContext *const msac) {
     int len = 0;
@@ -1053,6 +1055,7 @@ static int mc(Dav1dTaskContext *const t,
     return 0;
 }
 
+#if CONFIG_COMPOUND
 static int obmc(Dav1dTaskContext *const t,
                 pixel *const dst, const ptrdiff_t dst_stride,
                 const uint8_t *const b_dim, const int pl,
@@ -1115,6 +1118,8 @@ static int obmc(Dav1dTaskContext *const t,
         }
     return 0;
 }
+
+#endif /* CONFIG_COMPOUND */
 
 #if CONFIG_WARP
 static int warp_affine(Dav1dTaskContext *const t,
@@ -1577,9 +1582,12 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
     const int has_chroma = f->cur.p.layout != DAV1D_PIXEL_LAYOUT_I400 &&
                            (bw4 > ss_hor || t->bx & 1) &&
                            (bh4 > ss_ver || t->by & 1);
+    int res;
+
+#if CONFIG_COMPOUND
     const int chr_layout_idx = f->cur.p.layout == DAV1D_PIXEL_LAYOUT_I400 ? 0 :
                                DAV1D_PIXEL_LAYOUT_I444 - f->cur.p.layout;
-    int res;
+#endif
 
     // prediction
     const int cbh4 = (bh4 + ss_ver) >> ss_ver, cbw4 = (bw4 + ss_hor) >> ss_hor;
@@ -1619,11 +1627,14 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
             res = mc(t, dst, NULL, f->cur.stride[0],
                      bw4, bh4, t->bx, t->by, 0, b->mv[0], refp, b->ref[0], filter_2d);
             if (res) return res;
+#if CONFIG_COMPOUND
             if (b->motion_mode == MM_OBMC) {
                 res = obmc(t, dst, f->cur.stride[0], b_dim, 0, bx4, by4, w4, h4);
                 if (res) return res;
             }
+#endif
         }
+#if CONFIG_COMPOUND
         if (b->interintra_type) {
             pixel *const tl_edge = bitfn(t->scratch.edge) + 32;
             enum IntraPredMode m = b->interintra_mode == II_SMOOTH_PRED ?
@@ -1648,6 +1659,7 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
             dsp->mc.blend(dst, f->cur.stride[0], tmp,
                           bw4 * 4, bh4 * 4, II_MASK(0, bs, b));
         }
+#endif /* CONFIG_COMPOUND */
 
         if (!has_chroma) goto skip_inter_chroma_pred;
 
@@ -1741,13 +1753,16 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
                              t->bx & ~ss_hor, t->by & ~ss_ver,
                              1 + pl, b->mv[0], refp, b->ref[0], filter_2d);
                     if (res) return res;
+#if CONFIG_COMPOUND
                     if (b->motion_mode == MM_OBMC) {
                         res = obmc(t, ((pixel *) f->cur.data[1 + pl]) + uvdstoff,
                                    f->cur.stride[1], b_dim, 1 + pl, bx4, by4, w4, h4);
                         if (res) return res;
                     }
+#endif
                 }
             }
+#if CONFIG_COMPOUND
             if (b->interintra_type) {
                 // FIXME for 8x32 with 4:2:2 subsampling, this probably does
                 // the wrong thing since it will select 4x16, not 4x32, as a
@@ -1787,10 +1802,12 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
                                   cbw4 * 4, cbh4 * 4, ii_mask);
                 }
             }
+#endif /* CONFIG_COMPOUND */
         }
 
     skip_inter_chroma_pred: {}
         t->tl_4x4_filter = filter_2d;
+#if CONFIG_COMPOUND
     } else {
         const enum Filter2d filter_2d = b->filter2d;
         // Maximum super block size is 128x128
@@ -1884,6 +1901,11 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
             }
         }
     }
+#else /* CONFIG_COMPOUND */
+    } else {
+        return -1;
+    }
+#endif /* CONFIG_COMPOUND */
 
     if (DEBUG_BLOCK_INFO && DEBUG_B_PIXELS) {
         hex_dump(dst, f->cur.stride[0], b_dim[0] * 4, b_dim[1] * 4, "y-pred");

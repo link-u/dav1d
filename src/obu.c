@@ -201,6 +201,10 @@ static NOINLINE int parse_seq_hdr(Dav1dSequenceHeader *const hdr,
             hdr->jnt_comp = dav1d_get_bit(gb);
             hdr->ref_frame_mvs = dav1d_get_bit(gb);
         }
+#if !CONFIG_COMPOUND
+        if (hdr->inter_intra || hdr->masked_compound || hdr->jnt_comp)
+            return DAV1D_ERR(ENOPROTOOPT);
+#endif
         hdr->screen_content_tools = dav1d_get_bit(gb) ? DAV1D_ADAPTIVE : dav1d_get_bit(gb);
     #if DEBUG_SEQ_HDR
         printf("SEQHDR: post-screentools: off=%u\n",
@@ -944,6 +948,10 @@ static int parse_frame_hdr(Dav1dContext *const c, GetBits *const gb) {
 #endif
     if (IS_INTER_OR_SWITCH(hdr))
         hdr->switchable_comp_refs = dav1d_get_bit(gb);
+#if !CONFIG_COMPOUND
+    if (hdr->switchable_comp_refs)
+        return DAV1D_ERR(ENOPROTOOPT);
+#endif
 #if DEBUG_FRAME_HDR
     printf("HDR: post-refmode: off=%td\n",
            (gb->ptr - init_ptr) * 8 - gb->bits_left);

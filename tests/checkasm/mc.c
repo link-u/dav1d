@@ -782,6 +782,7 @@ void bitfn(checkasm_check_mc)(void) {
     check_mc_scaled(&c);
     check_mct_scaled(&c);
 #endif
+#if CONFIG_COMPOUND
     check_avg(&c);
     check_w_avg(&c);
     check_mask(&c);
@@ -789,6 +790,7 @@ void bitfn(checkasm_check_mc)(void) {
     check_blend(&c);
     check_blend_v(&c);
     check_blend_h(&c);
+#endif
 #if CONFIG_WARP
     check_warp8x8(&c);
     check_warp8x8t(&c);

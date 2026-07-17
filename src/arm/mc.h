@@ -38,6 +38,7 @@ decl_8tap_fns(sve2);
 decl_mc_fn(BF(dav1d_put_bilin, neon));
 decl_mct_fn(BF(dav1d_prep_bilin, neon));
 
+#if CONFIG_COMPOUND
 decl_avg_fn(BF(dav1d_avg, neon));
 decl_w_avg_fn(BF(dav1d_w_avg, neon));
 decl_mask_fn(BF(dav1d_mask, neon));
@@ -50,6 +51,7 @@ decl_w_mask_fn(BF(dav1d_w_mask_444, neon));
 decl_w_mask_fn(BF(dav1d_w_mask_422, neon));
 #endif
 decl_w_mask_fn(BF(dav1d_w_mask_420, neon));
+#endif
 
 #if CONFIG_WARP
 decl_warp8x8_fn(BF(dav1d_warp_affine_8x8, neon));
@@ -72,6 +74,7 @@ static ALWAYS_INLINE void mc_dsp_init_arm(Dav1dMCDSPContext *const c) {
     init_mc_fn (FILTER_2D_BILINEAR, bilin, neon);
     init_mct_fn(FILTER_2D_BILINEAR, bilin, neon);
 
+#if CONFIG_COMPOUND
     c->avg = BF(dav1d_avg, neon);
     c->w_avg = BF(dav1d_w_avg, neon);
     c->mask = BF(dav1d_mask, neon);
@@ -83,6 +86,7 @@ static ALWAYS_INLINE void mc_dsp_init_arm(Dav1dMCDSPContext *const c) {
     c->w_mask[1] = BF(dav1d_w_mask_422, neon);
 #endif
     c->w_mask[2] = BF(dav1d_w_mask_420, neon);
+#endif
 #if CONFIG_WARP
     c->warp8x8 = BF(dav1d_warp_affine_8x8, neon);
     c->warp8x8t = BF(dav1d_warp_affine_8x8t, neon);

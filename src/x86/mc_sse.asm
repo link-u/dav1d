@@ -29,6 +29,7 @@
 
 SECTION_RODATA 16
 
+%if CONFIG_COMPOUND ; compound_rodata
 ; dav1d_obmc_masks[] with 64-x interleaved
 obmc_masks: db  0,  0,  0,  0
             ; 2 @4
@@ -44,12 +45,15 @@ obmc_masks: db  0,  0,  0,  0
             db 33, 31, 35, 29, 36, 28, 38, 26, 40, 24, 41, 23, 43, 21, 44, 20
             db 45, 19, 47, 17, 48, 16, 50, 14, 51, 13, 52, 12, 53, 11, 55,  9
             db 56,  8, 57,  7, 58,  6, 59,  5, 60,  4, 60,  4, 61,  3, 62,  2
+%endif ; CONFIG_COMPOUND compound_rodata
 
 warp_8x8_shufA: db 0,  2,  4,  6,  1,  3,  5,  7,  1,  3,  5,  7,  2,  4,  6,  8
 warp_8x8_shufB: db 4,  6,  8, 10,  5,  7,  9, 11,  5,  7,  9, 11,  6,  8, 10, 12
 warp_8x8_shufC: db 2,  4,  6,  8,  3,  5,  7,  9,  3,  5,  7,  9,  4,  6,  8, 10
 warp_8x8_shufD: db 6,  8, 10, 12,  7,  9, 11, 13,  7,  9, 11, 13,  8, 10, 12, 14
+%if CONFIG_COMPOUND
 blend_shuf:     db 0,  1,  0,  1,  0,  1,  0,  1,  2,  3,  2,  3,  2,  3,  2,  3
+%endif ; CONFIG_COMPOUND
 subpel_h_shuf4: db 0,  1,  2,  3,  1,  2,  3,  4,  8,  9, 10, 11,  9, 10, 11, 12
                 db 2,  3,  4,  5,  3,  4,  5,  6, 10, 11, 12, 13, 11, 12, 13, 14
 subpel_h_shufA: db 0,  1,  2,  3,  1,  2,  3,  4,  2,  3,  4,  5,  3,  4,  5,  6
@@ -65,10 +69,12 @@ unpckw:         db 0,  1,  4,  5,  8,  9, 12, 13,  2,  3,  6,  7, 10, 11, 14, 15
 rescale_mul:    dd 0,  1,  2,  3
 resize_shuf:    db 0,  0,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  7,  7,  7,  7
 
+%if CONFIG_COMPOUND
 wm_420_sign:    times 4 dw 258
                 times 4 dw 257
 wm_422_sign:    times 8 db 128
                 times 8 db 127
+%endif ; CONFIG_COMPOUND
 
 pb_8x0_8x8: times 8 db 0
             times 8 db 8
@@ -222,6 +228,7 @@ cextern mc_subpel_filters
     %endrep
 %endmacro
 
+%if CONFIG_COMPOUND ; compound_jmp
 BIDIR_JMP_TABLE avg, ssse3,        4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE w_avg, ssse3,      4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE mask, ssse3,       4, 8, 16, 32, 64, 128
@@ -233,6 +240,7 @@ BIDIR_JMP_TABLE w_mask_444, ssse3, 4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE blend, ssse3,      4, 8, 16, 32
 BIDIR_JMP_TABLE blend_v, ssse3, 2, 4, 8, 16, 32
 BIDIR_JMP_TABLE blend_h, ssse3, 2, 4, 8, 16, 16, 16, 16
+%endif ; CONFIG_COMPOUND compound_jmp
 
 %macro BASE_JMP_TABLE 3-*
     %xdefine %1_%2_table (%%table - %3)
@@ -8578,6 +8586,7 @@ DECLARE_REG_TMP 6, 7
 %endif
 %endif ; CONFIG_WARP warp_fns
 
+%if CONFIG_COMPOUND ; compound_fns
 %macro BIDIR_FN 1 ; op
     %1                    0
     lea            stride3q, [strideq*3]
@@ -9571,6 +9580,7 @@ cglobal blend_h_8bpc, 3, 7, 6, dst, ds, tmp, w, h, mask
     inc                  hq
     jl .w16_loop0
     RET
+%endif ; CONFIG_COMPOUND compound_fns
 
 ; emu_edge args:
 ; const intptr_t bw, const intptr_t bh, const intptr_t iw, const intptr_t ih,

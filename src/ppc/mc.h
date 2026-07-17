@@ -28,9 +28,11 @@
 #include "src/cpu.h"
 #include "src/mc.h"
 
+#if CONFIG_COMPOUND
 decl_blend_fn(BF(dav1d_blend, pwr9));
 decl_blend_dir_fn(BF(dav1d_blend_h, pwr9));
 decl_blend_dir_fn(BF(dav1d_blend_v, pwr9));
+#endif
 
 static ALWAYS_INLINE void mc_dsp_init_ppc(Dav1dMCDSPContext *const c) {
   const unsigned flags = dav1d_get_cpu_flags();
@@ -38,9 +40,12 @@ static ALWAYS_INLINE void mc_dsp_init_ppc(Dav1dMCDSPContext *const c) {
   if (!(flags & DAV1D_PPC_CPU_FLAG_PWR9)) return;
 
 #if BITDEPTH == 8
+#if CONFIG_COMPOUND
   c->blend = BF(dav1d_blend, pwr9);
   c->blend_h = BF(dav1d_blend_h, pwr9);
   c->blend_v = BF(dav1d_blend_v, pwr9);
+#endif
+
 #endif
 
 }

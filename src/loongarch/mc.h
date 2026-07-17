@@ -37,30 +37,31 @@
 #define init_mct_fn(type, name, suffix) \
     c->mct[type] = BF(dav1d_prep_##name, suffix)
 
+#if CONFIG_COMPOUND
 decl_avg_fn(BF(dav1d_avg, lsx));
 decl_w_avg_fn(BF(dav1d_w_avg, lsx));
 decl_mask_fn(BF(dav1d_mask, lsx));
-#if CONFIG_WARP
-decl_warp8x8_fn(BF(dav1d_warp_affine_8x8, lsx));
-decl_warp8x8t_fn(BF(dav1d_warp_affine_8x8t, lsx));
-#endif
 decl_w_mask_fn(BF(dav1d_w_mask_420, lsx));
 decl_blend_fn(BF(dav1d_blend, lsx));
 decl_blend_dir_fn(BF(dav1d_blend_v, lsx));
 decl_blend_dir_fn(BF(dav1d_blend_h, lsx));
-decl_emu_edge_fn(BF(dav1d_emu_edge, lsx));
-
-decl_8tap_fns(lsx);
 
 decl_avg_fn(BF(dav1d_avg, lasx));
 decl_w_avg_fn(BF(dav1d_w_avg, lasx));
 decl_mask_fn(BF(dav1d_mask, lasx));
+decl_w_mask_fn(BF(dav1d_w_mask_420, lasx));
+decl_blend_dir_fn(BF(dav1d_blend_h, lasx));
+#endif
+
 #if CONFIG_WARP
+decl_warp8x8_fn(BF(dav1d_warp_affine_8x8, lsx));
+decl_warp8x8t_fn(BF(dav1d_warp_affine_8x8t, lsx));
 decl_warp8x8_fn(BF(dav1d_warp_affine_8x8, lasx));
 decl_warp8x8t_fn(BF(dav1d_warp_affine_8x8t, lasx));
 #endif
-decl_w_mask_fn(BF(dav1d_w_mask_420, lasx));
-decl_blend_dir_fn(BF(dav1d_blend_h, lasx));
+decl_emu_edge_fn(BF(dav1d_emu_edge, lsx));
+
+decl_8tap_fns(lsx);
 
 decl_8tap_gen(mct, prep, lasx);
 
@@ -70,32 +71,36 @@ static ALWAYS_INLINE void mc_dsp_init_loongarch(Dav1dMCDSPContext *const c) {
 
     if (!(flags & DAV1D_LOONGARCH_CPU_FLAG_LSX)) return;
 
+#if CONFIG_COMPOUND
     c->avg = BF(dav1d_avg, lsx);
     c->w_avg = BF(dav1d_w_avg, lsx);
     c->mask = BF(dav1d_mask, lsx);
-#if CONFIG_WARP
-    c->warp8x8 = BF(dav1d_warp_affine_8x8, lsx);
-    c->warp8x8t = BF(dav1d_warp_affine_8x8t, lsx);
-#endif
     c->w_mask[2] = BF(dav1d_w_mask_420, lsx);
     c->blend = BF(dav1d_blend, lsx);
     c->blend_v = BF(dav1d_blend_v, lsx);
     c->blend_h = BF(dav1d_blend_h, lsx);
+#endif
+#if CONFIG_WARP
+    c->warp8x8 = BF(dav1d_warp_affine_8x8, lsx);
+    c->warp8x8t = BF(dav1d_warp_affine_8x8t, lsx);
+#endif
     c->emu_edge = BF(dav1d_emu_edge, lsx);
 
     init_8tap_fns(lsx);
 
     if (!(flags & DAV1D_LOONGARCH_CPU_FLAG_LASX)) return;
 
+#if CONFIG_COMPOUND
     c->avg = BF(dav1d_avg, lasx);
     c->w_avg = BF(dav1d_w_avg, lasx);
     c->mask = BF(dav1d_mask, lasx);
+    c->w_mask[2] = BF(dav1d_w_mask_420, lasx);
+    c->blend_h = BF(dav1d_blend_h, lasx);
+#endif
 #if CONFIG_WARP
     c->warp8x8 = BF(dav1d_warp_affine_8x8, lasx);
     c->warp8x8t = BF(dav1d_warp_affine_8x8t, lasx);
 #endif
-    c->w_mask[2] = BF(dav1d_w_mask_420, lasx);
-    c->blend_h = BF(dav1d_blend_h, lasx);
 
     init_8tap_gen(mct, lasx);
 #endif

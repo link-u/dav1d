@@ -30,6 +30,7 @@
 
 SECTION_RODATA 32
 
+%if CONFIG_COMPOUND ; compound_rodata
 ; dav1d_obmc_masks[] with 64-x interleaved
 obmc_masks:     db  0,  0,  0,  0
                 ; 2
@@ -46,6 +47,7 @@ obmc_masks:     db  0,  0,  0,  0
                 db 45, 19, 47, 17, 48, 16, 50, 14, 51, 13, 52, 12, 53, 11, 55,  9
                 db 56,  8, 57,  7, 58,  6, 59,  5, 60,  4, 60,  4, 61,  3, 62,  2
                 db 64,  0, 64,  0, 64,  0, 64,  0, 64,  0, 64,  0, 64,  0, 64,  0
+%endif ; CONFIG_COMPOUND compound_rodata
 
 warp_8x8_shufA: db  0,  2,  4,  6,  1,  3,  5,  7,  1,  3,  5,  7,  2,  4,  6,  8
                 db  4,  6,  8, 10,  5,  7,  9, 11,  5,  7,  9, 11,  6,  8, 10, 12
@@ -62,15 +64,19 @@ subpel_s_shuf8: db  0,  1,  8,  9,  2,  3, 10, 11,  4,  5, 12, 13,  6,  7, 14, 1
 bilin_h_shuf4:  db  0,  1,  1,  2,  2,  3,  3,  4,  8,  9,  9, 10, 10, 11, 11, 12
 bilin_v_shuf4:  db  4,  0,  5,  1,  6,  2,  7,  3,  8,  4,  9,  5, 10,  6, 11,  7
 deint_shuf4:    db  0,  4,  1,  5,  2,  6,  3,  7,  4,  8,  5,  9,  6, 10,  7, 11
+%if CONFIG_COMPOUND
 blend_shuf:     db  0,  1,  0,  1,  0,  1,  0,  1,  2,  3,  2,  3,  2,  3,  2,  3
+%endif ; CONFIG_COMPOUND
 pb_8x0_8x8:     db  0,  0,  0,  0,  0,  0,  0,  0,  8,  8,  8,  8,  8,  8,  8,  8
 bdct_lb_dw:     db  0,  0,  0,  0,  4,  4,  4,  4,  8,  8,  8,  8, 12, 12, 12, 12
 wswap:          db  2,  3,  0,  1,  6,  7,  4,  5, 10, 11,  8,  9, 14, 15, 12, 13
 resize_shuf:    db  0,  0,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  7,  7,  7,  7
 rescale_mul:    dd  0,  1,  2,  3,  4,  5,  6,  7
 
+%if CONFIG_COMPOUND
 wm_420_sign:    dd 0x01020102, 0x01010101
 wm_422_sign:    dd 0x80808080, 0x7f7f7f7f
+%endif ; CONFIG_COMPOUND
 
 pb_64:   times 4 db 64
 pw_m256: times 2 dw -256
@@ -196,6 +202,7 @@ HV_JMP_TABLE     prep, 8tap,  avx2,  1,    4, 8, 16, 32, 64, 128
 SCALED_JMP_TABLE put_8tap_scaled, avx2, 2, 4, 8, 16, 32, 64, 128
 SCALED_JMP_TABLE prep_8tap_scaled, avx2,   4, 8, 16, 32, 64, 128
 %endif ; CONFIG_SUPERRES scaled_jmp
+%if CONFIG_COMPOUND ; compound_jmp
 BIDIR_JMP_TABLE  avg, avx2,                4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE  w_avg, avx2,              4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE  mask, avx2,               4, 8, 16, 32, 64, 128
@@ -207,6 +214,7 @@ BIDIR_JMP_TABLE  w_mask_444, avx2,         4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE  blend, avx2,              4, 8, 16, 32
 BIDIR_JMP_TABLE  blend_v, avx2,         2, 4, 8, 16, 32
 BIDIR_JMP_TABLE  blend_h, avx2,         2, 4, 8, 16, 32, 32, 32
+%endif ; CONFIG_COMPOUND compound_jmp
 
 SECTION .text
 
@@ -5145,6 +5153,7 @@ ALIGN function_align
     ret
 
 %endif ; CONFIG_WARP warp_fns
+%if CONFIG_COMPOUND ; compound_fns
 %macro BIDIR_FN 1 ; op
     %1                    0
     lea            stride3q, [strideq*3]
@@ -5741,6 +5750,7 @@ ALIGN function_align
     inc                  hq
     jl .w32_loop0
     RET
+%endif ; CONFIG_COMPOUND compound_fns
 
 cglobal emu_edge_8bpc, 10, 13, 1, bw, bh, iw, ih, x, y, dst, dstride, src, sstride, \
                              bottomext, rightext
@@ -6065,6 +6075,7 @@ cglobal resize_8bpc, 6, 12, 16, dst, dst_stride, src, src_stride, \
     RET
 
 %endif ; CONFIG_SUPERRES resize
+%if CONFIG_COMPOUND ; compound_wmask
 cglobal w_mask_420_8bpc, 4, 8, 14, dst, stride, tmp1, tmp2, w, h, mask, stride3
 %define base r7-w_mask_420_avx2_table
     lea                  r7, [w_mask_420_avx2_table]
@@ -6574,5 +6585,6 @@ cglobal w_mask_444_8bpc, 4, 8, 8, dst, stride, tmp1, tmp2, w, h, mask, stride3
     dec                  hd
     jg .w128_loop
     RET
+%endif ; CONFIG_COMPOUND compound_wmask
 
 %endif ; ARCH_X86_64

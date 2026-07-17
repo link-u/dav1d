@@ -28,6 +28,7 @@
 #include "src/cpu.h"
 #include "src/mc.h"
 
+#if CONFIG_COMPOUND
 decl_blend_fn(BF(dav1d_blend, rvv));
 decl_blend_dir_fn(BF(dav1d_blend_h, rvv));
 decl_blend_dir_fn(BF(dav1d_blend_v, rvv));
@@ -55,6 +56,7 @@ decl_w_mask_fn(BF(dav1d_w_mask_444_vl256, rvv));
 decl_w_mask_fn(BF(dav1d_w_mask_422_vl256, rvv));
 #endif
 decl_w_mask_fn(BF(dav1d_w_mask_420_vl256, rvv));
+#endif
 
 #if CONFIG_WARP
 decl_warp8x8_fn(BF(dav1d_warp_8x8, rvv));
@@ -73,6 +75,7 @@ static ALWAYS_INLINE void mc_dsp_init_riscv(Dav1dMCDSPContext *const c) {
 
   if (!(flags & DAV1D_RISCV_CPU_FLAG_V)) return;
 
+#if CONFIG_COMPOUND
   c->blend = BF(dav1d_blend, rvv);
   c->blend_v = BF(dav1d_blend_v, rvv);
 
@@ -85,10 +88,11 @@ static ALWAYS_INLINE void mc_dsp_init_riscv(Dav1dMCDSPContext *const c) {
     c->blend = BF(dav1d_blend_vl512, rvv);
     c->blend_v = BF(dav1d_blend_v_vl512, rvv);
   }
+#endif
 
 #if BITDEPTH == 8
+#if CONFIG_COMPOUND
   c->blend_h = BF(dav1d_blend_h, rvv);
-  c->emu_edge = BF(dav1d_emu_edge, rvv);
 
   c->w_mask[0] = BF(dav1d_w_mask_444, rvv);
 #if CONFIG_422_444
@@ -99,6 +103,8 @@ static ALWAYS_INLINE void mc_dsp_init_riscv(Dav1dMCDSPContext *const c) {
   c->avg     = BF(dav1d_avg, rvv);
   c->w_avg   = BF(dav1d_w_avg, rvv);
   c->mask    = BF(dav1d_mask, rvv);
+#endif
+  c->emu_edge = BF(dav1d_emu_edge, rvv);
 
 #if CONFIG_WARP
   c->warp8x8 = BF(dav1d_warp_8x8, rvv);
@@ -107,6 +113,7 @@ static ALWAYS_INLINE void mc_dsp_init_riscv(Dav1dMCDSPContext *const c) {
 
   init_8tap_fns(rvv);
 
+#if CONFIG_COMPOUND
   if (dav1d_get_vlen() >= 256) {
     c->blend_h = BF(dav1d_blend_h_vl256, rvv);
 
@@ -119,5 +126,6 @@ static ALWAYS_INLINE void mc_dsp_init_riscv(Dav1dMCDSPContext *const c) {
   if (dav1d_get_vlen() >= 512) {
     c->blend_h = BF(dav1d_blend_h_vl512, rvv);
   }
+#endif
 #endif
 }

@@ -30,6 +30,7 @@
 
 SECTION_RODATA 64
 
+%if CONFIG_COMPOUND ; compound_rodata
 ; dav1d_obmc_masks[] * -512
 const obmc_masks_avx2
             dw      0,      0,  -9728,      0, -12800,  -7168,  -2560,      0
@@ -40,6 +41,7 @@ const obmc_masks_avx2
             dw  -9728,  -8704,  -8192,  -7168,  -6656,  -6144,  -5632,  -4608
             dw  -4096,  -3584,  -3072,  -2560,  -2048,  -2048,  -1536,  -1024
             dw      0,      0,      0,      0,      0,      0,      0,      0
+%endif ; CONFIG_COMPOUND compound_rodata
 
 deint_shuf:     dd 0,  4,  1,  5,  2,  6,  3,  7
 subpel_h_shufA: db 0,  1,  2,  3,  2,  3,  4,  5,  4,  5,  6,  7,  6,  7,  8,  9
@@ -51,7 +53,9 @@ rescale_mul:    dd 0,  1,  2,  3,  4,  5,  6,  7
 rescale_mul2:   dd 0,  1,  4,  5,  2,  3,  6,  7
 resize_shuf:    db 0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  2,  3,  4,  5,  6,  7
                 db 8,  9, 10, 11, 12, 13, 14, 15, 14, 15, 14, 15, 14, 15, 14, 15
+%if CONFIG_COMPOUND
 blend_shuf:     db 0,  1,  0,  1,  0,  1,  0,  1,  2,  3,  2,  3,  2,  3,  2,  3
+%endif ; CONFIG_COMPOUND
 wswap:          db 2,  3,  0,  1,  6,  7,  4,  5, 10, 11,  8,  9, 14, 15, 12, 13
 bdct_lb_q: times 8 db 0
            times 8 db 4
@@ -104,6 +108,7 @@ pq_0x40000000: dq 0x40000000
     %endrep
 %endmacro
 
+%if CONFIG_COMPOUND ; compound_jmp
 BIDIR_JMP_TABLE avg,        avx2,    4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE w_avg,      avx2,    4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE mask,       avx2,    4, 8, 16, 32, 64, 128
@@ -113,6 +118,7 @@ BIDIR_JMP_TABLE w_mask_444, avx2,    4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE blend,      avx2,    4, 8, 16, 32
 BIDIR_JMP_TABLE blend_v,    avx2, 2, 4, 8, 16, 32
 BIDIR_JMP_TABLE blend_h,    avx2, 2, 4, 8, 16, 32, 64, 128
+%endif ; CONFIG_COMPOUND compound_jmp
 
 %macro BASE_JMP_TABLE 3-*
     %xdefine %1_%2_table (%%table - %3)
@@ -5373,6 +5379,7 @@ ALIGN function_align
     paddd                m0, m12 ; rounded 14-bit result in upper 16 bits of dword
     ret
 
+%if CONFIG_COMPOUND ; compound_fns
 %macro BIDIR_FN 0
     call .main
     lea            stride3q, [strideq*3]
@@ -6483,6 +6490,7 @@ INIT_YMM avx2
     inc                  hq
     jl .w128
     RET
+%endif ; CONFIG_COMPOUND compound_fns
 
 cglobal emu_edge_16bpc, 10, 13, 1, bw, bh, iw, ih, x, y, dst, dstride, src, sstride, \
                                    bottomext, rightext

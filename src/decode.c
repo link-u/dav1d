@@ -639,6 +639,7 @@ static NOINLINE void affine_lowest_px_chroma(Dav1dTaskContext *const t, int *con
         affine_lowest_px(t, dst, b_dim, wmp, f->cur.p.layout & DAV1D_PIXEL_LAYOUT_I420, 1);
 }
 
+#if CONFIG_COMPOUND
 static void obmc_lowest_px(Dav1dTaskContext *const t,
                            int (*const dst)[2], const int is_chroma,
                            const uint8_t *const b_dim,
@@ -686,6 +687,8 @@ static void obmc_lowest_px(Dav1dTaskContext *const t,
             y += imax(l_b_dim[1], 2);
         }
 }
+
+#endif /* CONFIG_COMPOUND */
 
 static int decode_b(Dav1dTaskContext *const t,
                     const enum BlockLevel bl,
@@ -1407,6 +1410,11 @@ static int decode_b(Dav1dTaskContext *const t,
             is_comp = 0;
         }
 
+#if !CONFIG_COMPOUND
+        if (b->skip_mode || is_comp)
+            return -1;
+#endif
+
         if (b->skip_mode) {
             b->ref[0] = f->frame_hdr->skip_mode_refs[0];
             b->ref[1] = f->frame_hdr->skip_mode_refs[1];
@@ -1848,6 +1856,10 @@ static int decode_b(Dav1dTaskContext *const t,
             } else {
                 b->motion_mode = MM_TRANSLATION;
             }
+#if !CONFIG_COMPOUND
+            if (b->motion_mode == MM_OBMC)
+                return -1;
+#endif
         }
 
         // subpel filter
@@ -1988,9 +2000,11 @@ static int decode_b(Dav1dTaskContext *const t,
             } else {
                 mc_lowest_px(&lowest_px[b->ref[0]][0], t->by, bh4, b->mv[0].y,
                              0, &f->svc[b->ref[0]][1]);
+#if CONFIG_COMPOUND
                 if (b->motion_mode == MM_OBMC) {
                     obmc_lowest_px(t, lowest_px, 0, b_dim, bx4, by4, w4, h4);
                 }
+#endif
             }
 
             // uv
@@ -2042,9 +2056,11 @@ static int decode_b(Dav1dTaskContext *const t,
                         mc_lowest_px(&lowest_px[b->ref[0]][1],
                                      t->by & ~ss_ver, bh4 << (bh4 == ss_ver),
                                      b->mv[0].y, ss_ver, &f->svc[b->ref[0]][1]);
+#if CONFIG_COMPOUND
                         if (b->motion_mode == MM_OBMC) {
                             obmc_lowest_px(t, lowest_px, 1, b_dim, bx4, by4, w4, h4);
                         }
+#endif
                     }
                 }
             }
@@ -3103,6 +3119,7 @@ int dav1d_decode_frame_init(Dav1dFrameContext *const f) {
         memset(f->qm, 0, sizeof(f->qm));
 
     // setup jnt_comp weights
+#if CONFIG_COMPOUND
     if (f->frame_hdr->switchable_comp_refs) {
         for (int i = 0; i < 7; i++) {
             const unsigned ref0poc = f->refp[i].p.frame_hdr->frame_offset;
@@ -3138,6 +3155,7 @@ int dav1d_decode_frame_init(Dav1dFrameContext *const f) {
             }
         }
     }
+#endif /* CONFIG_COMPOUND */
 
     /* Init loopfilter pointers. Increasing NULL pointers is technically UB,
      * so just point the chroma pointers in 4:0:0 to the luma plane here to

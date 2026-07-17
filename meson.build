@@ -105,6 +105,10 @@ cdata_asm.set10('CONFIG_SUPERRES', get_option('enable_superres'))
 cdata.set10('CONFIG_WARP', get_option('enable_warp'))
 cdata_asm.set10('CONFIG_WARP', get_option('enable_warp'))
 
+# Compound prediction / interintra blend / OBMC
+cdata.set10('CONFIG_COMPOUND', get_option('enable_compound'))
+cdata_asm.set10('CONFIG_COMPOUND', get_option('enable_compound'))
+
 #
 # OS/Compiler checks and defines
 #

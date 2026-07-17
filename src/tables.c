@@ -817,6 +817,7 @@ const int8_t ALIGN(dav1d_filter_intra_taps[5][64], 64) = {
     }
 };
 
+#if CONFIG_COMPOUND
 const uint8_t ALIGN(dav1d_obmc_masks[64], 16) = {
     /* Unused */
      0,  0,
@@ -832,6 +833,7 @@ const uint8_t ALIGN(dav1d_obmc_masks[64], 16) = {
     31, 29, 28, 26, 24, 23, 21, 20, 19, 17, 16, 14, 13, 12, 11,  9,
      8,  7,  6,  5,  4,  4,  3,  2,  0,  0,  0,  0,  0,  0,  0,  0,
 };
+#endif /* CONFIG_COMPOUND */
 
 // Taken from the spec. Range is [-2048, 2047], mean is 0 and stddev is 512
 ATTR_MCMODEL_SMALL

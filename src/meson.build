@@ -51,8 +51,11 @@ libdav1d_sources = files(
     'scan.c',
     'tables.c',
     'thread_task.c',
-    'wedge.c',
 )
+
+if get_option('enable_compound')
+    libdav1d_sources += files('wedge.c')
+endif
 
 if get_option('enable_warp')
     libdav1d_sources += files('warpmv.c')

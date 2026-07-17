@@ -663,6 +663,8 @@ static void prep_bilin_scaled_c(int16_t *tmp,
 
 #endif /* CONFIG_SUPERRES */
 
+/* CONFIG_COMPOUND: avg / w_avg / mask / blend / w_mask */
+#if CONFIG_COMPOUND
 static void avg_c(pixel *dst, const ptrdiff_t dst_stride,
                   const int16_t *tmp1, const int16_t *tmp2, const int w, int h
                   HIGHBD_DECL_SUFFIX)
@@ -821,6 +823,8 @@ w_mask_fns(422, 1, 0);
 w_mask_fns(420, 1, 1);
 
 #undef w_mask_fns
+
+#endif /* CONFIG_COMPOUND */
 
 #define FILTER_WARP_RND(src, x, F, stride, sh) \
     ((F[0] * src[x - 3 * stride] + \
@@ -1028,6 +1032,7 @@ COLD void bitfn(dav1d_mc_dsp_init)(Dav1dMCDSPContext *const c) {
     init_mc_fns(FILTER_2D_8TAP_SMOOTH_SHARP,   8tap_smooth_sharp);
     init_mc_fns(FILTER_2D_BILINEAR,            bilin);
 
+#if CONFIG_COMPOUND
     c->avg      = avg_c;
     c->w_avg    = w_avg_c;
     c->mask     = mask_c;
@@ -1039,6 +1044,7 @@ COLD void bitfn(dav1d_mc_dsp_init)(Dav1dMCDSPContext *const c) {
     c->w_mask[1] = w_mask_422_c;
 #endif
     c->w_mask[2] = w_mask_420_c;
+#endif /* CONFIG_COMPOUND */
 #if CONFIG_WARP
     c->warp8x8  = warp_affine_8x8_c;
     c->warp8x8t = warp_affine_8x8t_c;

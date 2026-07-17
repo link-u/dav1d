@@ -92,6 +92,7 @@ spel_h_shuf2b: db  1,  2, 17, 18,  5,  6, 21, 22, 17, 18, 33, 34, 21, 22, 37, 38
 spel_shuf2:    db 10, 11, 17, 18, 14, 15, 21, 22, 17, 18, 25, 26, 21, 22, 29, 30
 spel_h_shuf2a: db  0,  1,  2,  3,  2,  3,  4,  5, 16, 17, 18, 19, 18, 19, 20, 21
                db  4,  5,  6,  7,  6,  7,  8,  9, 20, 21, 22, 23, 22, 23, 24, 25
+%if CONFIG_COMPOUND ; compound_rodata
 w_mask_end42x: db  1,  5,  9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57, 61
                db 65, 69, 73, 77, 81, 85, 89, 93, 97,101,105,109,113,117,121,125
 w_mask_end444: db  0,  2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30
@@ -110,6 +111,7 @@ w_mask_shuf16: db  0,  2, 32, 34,  4,  6, 36, 38,  8, 10, 40, 42, 12, 14, 44, 46
                db 16, 18, 48, 50, 20, 22, 52, 54, 24, 26, 56, 58, 28, 30, 60, 62
                db 64, 66, 96, 98, 68, 70,100,102, 72, 74,104,106, 76, 78,108,110
                db 80, 82,112,114, 84, 86,116,118, 88, 90,120,122, 92, 94,124,126
+%endif ; CONFIG_COMPOUND compound_rodata
 warp8x8_permA: db  0,  1,  2,  3, 32, 33, 34, 35,  2,  3,  4,  5, 34, 35, 36, 37
                db  4,  5,  6,  7, 36, 37, 38, 39,  6,  7,  8,  9, 38, 39, 40, 41
                db  8,  9, 10, 11, 40, 41, 42, 43, 10, 11, 12, 13, 42, 43, 44, 45
@@ -128,13 +130,17 @@ pd_0to7:       dd  0,  1,  2,  3,  4,  5,  6,  7
 pw_2048:       times 2 dw 2048
                dd  3
 pw_8192:       times 2 dw 8192
+%if CONFIG_COMPOUND
 avg_shift:     dw  5,  5,  3,  3
+%endif ; CONFIG_COMPOUND
 pw_27615:      times 2 dw 27615
 pw_32766:      times 2 dw 32766
 warp8x8_permC: db -1,  0, -1,  1, -1,  8, -1,  9, -1,  4, -1,  5, -1, 12, -1, 13
 warp8x8_permD: db -1,  2, -1,  3, -1, 10, -1, 11, -1,  6, -1,  7, -1, 14, -1, 15
 warp_shift_h:  db 11, 19, 11, 19, 43, 51, 43, 51, 13, 21, 13, 21, 45, 53, 45, 53
+%if CONFIG_COMPOUND
 blend_shuf:    db  0,  1,  0,  1,  0,  1,  0,  1,  2,  3,  2,  3,  2,  3,  2,  3
+%endif ; CONFIG_COMPOUND
 resize_permA:  dd  0,  4,  8, 12,  1,  5,  9, 13, 16, 20, 24, 28, 17, 21, 25, 29
 resize_permB:  dd  2,  6, 10, 14,  3,  7, 11, 15, 18, 22, 26, 30, 19, 23, 27, 31
 resize_permC:  dq  0,  1,  4,  5,  8,  9, 12, 13
@@ -154,11 +160,13 @@ prep_8tap_rnd:    dd 128 - (8192 << 8)
 warp_8x8_rnd_h:   dd 512, 2048
 warp_8x8_rnd_v:   dd 262144, 65536
 warp_8x8t_rnd_v:  dd 16384 - (8192 << 15)
+%if CONFIG_COMPOUND ; compound_rodata2
 avg_round:        dw -16400, -16400, -16388, -16388
 w_avg_round:      dd 128 + (8192 << 4),  32 + (8192 << 4)
 mask_round:       dd 512 + (8192 << 6), 128 + (8192 << 6)
 w_mask_round:     dd 128, 64
 bidir_shift:      dw  6,  6,  4,  4
+%endif ; CONFIG_COMPOUND compound_rodata2
 
 pb_64:    times 4 db 64
 pw_m512:  times 2 dw -512
@@ -231,6 +239,7 @@ pd_0_4:   dd 0, 4
 %xdefine put_avx512icl mangle(private_prefix %+ _put_bilin_16bpc_avx512icl.put)
 %xdefine prep_avx512icl mangle(private_prefix %+ _prep_bilin_16bpc_avx512icl.prep)
 
+%if CONFIG_COMPOUND ; compound_jmp
 BIDIR_JMP_TABLE avg,        avx512icl,       4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE w_avg,      avx512icl,       4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE mask,       avx512icl,       4, 8, 16, 32, 64, 128
@@ -240,6 +249,7 @@ BIDIR_JMP_TABLE w_mask_444, avx512icl,       4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE blend,      avx512icl,       4, 8, 16, 32
 BIDIR_JMP_TABLE blend_v,    avx512icl,    2, 4, 8, 16, 32
 BIDIR_JMP_TABLE blend_h,    avx512icl,    2, 4, 8, 16, 32, 64, 128
+%endif ; CONFIG_COMPOUND compound_jmp
 BASE_JMP_TABLE put,         avx512icl,    2, 4, 8, 16, 32, 64, 128
 BASE_JMP_TABLE prep,        avx512icl,       4, 8, 16, 32, 64, 128
 HV_JMP_TABLE   put,  bilin, avx512icl, 7, 2, 4, 8, 16, 32, 64, 128
@@ -255,7 +265,9 @@ cextern mc_subpel_filters
 %define subpel_filters (mangle(private_prefix %+ _mc_subpel_filters)-8)
 
 cextern mc_warp_filter
+%if CONFIG_COMPOUND
 cextern obmc_masks_avx2
+%endif
 cextern resize_filter
 
 SECTION .text
@@ -4869,6 +4881,7 @@ ALIGN function_align
     vpmultishiftqb       m0, m9, m0          ; a a b b
     ret
 
+%if CONFIG_COMPOUND ; compound_fns
 %macro BIDIR_FN 0
     call .main
     lea            stride3q, [strideq*3]
@@ -5974,6 +5987,7 @@ cglobal blend_h_16bpc, 3, 7, 9, dst, ds, tmp, w, h, mask
     inc                  hq
     jl .w128
     RET
+%endif ; CONFIG_COMPOUND compound_fns
 
 cglobal resize_16bpc, 6, 12, 32, dst, dst_stride, src, src_stride, \
                                  dst_w, h, src_w, dx, mx0, pxmax

@@ -122,7 +122,9 @@ EXTERN const uint8_t dav1d_sm_weights[128];
 EXTERN const uint16_t dav1d_dr_intra_derivative[44];
 EXTERN const int8_t dav1d_filter_intra_taps[5][64];
 
+#if CONFIG_COMPOUND
 EXTERN const uint8_t dav1d_obmc_masks[64];
+#endif
 
 EXTERN const int16_t dav1d_gaussian_sequence[2048]; // for fgs
 

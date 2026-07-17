@@ -65,6 +65,11 @@ option('enable_warp',
     value: true,
     description: 'Enable warped motion / affine global motion DSP')
 
+option('enable_compound',
+    type: 'boolean',
+    value: true,
+    description: 'Enable compound prediction (avg/jnt/wedge/diff-mask), interintra blend, and OBMC DSP')
+
 option('testdata_tests',
     type: 'boolean',
     value: false,

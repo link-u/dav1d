@@ -50,11 +50,15 @@
 #include "src/qm.h"
 #include "src/ref.h"
 #include "src/thread_task.h"
+#if CONFIG_COMPOUND
 #include "src/wedge.h"
+#endif
 
 static COLD void init_internal(void) {
     dav1d_init_cpu();
+#if CONFIG_COMPOUND
     dav1d_init_ii_wedge_masks();
+#endif
     dav1d_init_intra_edge_tree();
     dav1d_init_qm_tables();
     dav1d_init_thread();

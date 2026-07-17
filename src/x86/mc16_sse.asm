@@ -28,6 +28,7 @@
 
 SECTION_RODATA
 
+%if CONFIG_COMPOUND ; compound_rodata
 ; dav1d_obmc_masks[] << 9
 obmc_masks:     dw     0,     0,  9728,     0, 12800,  7168,  2560,     0
                 dw 14336, 11264,  8192,  5632,  3584,  1536,     0,     0
@@ -36,8 +37,11 @@ obmc_masks:     dw     0,     0,  9728,     0, 12800,  7168,  2560,     0
                 dw 15872, 14848, 14336, 13312, 12288, 11776, 10752, 10240
                 dw  9728,  8704,  8192,  7168,  6656,  6144,  5632,  4608
                 dw  4096,  3584,  3072,  2560,  2048,  2048,  1536,  1024
+%endif ; CONFIG_COMPOUND compound_rodata
 
+%if CONFIG_COMPOUND
 blend_shuf:     db 0,  1,  0,  1,  0,  1,  0,  1,  2,  3,  2,  3,  2,  3,  2,  3
+%endif ; CONFIG_COMPOUND
 spel_h_shufA:   db 0,  1,  2,  3,  2,  3,  4,  5,  4,  5,  6,  7,  6,  7,  8,  9
 spel_h_shufB:   db 4,  5,  6,  7,  6,  7,  8,  9,  8,  9, 10, 11, 10, 11, 12, 13
 spel_h_shuf2:   db 0,  1,  2,  3,  4,  5,  6,  7,  2,  3,  4,  5,  6,  7,  8,  9
@@ -107,6 +111,7 @@ warp8x8t_rnd:     times 2 dd 16384 - (8192 << 15)
     %endrep
 %endmacro
 
+%if CONFIG_COMPOUND ; compound_jmp
 BIDIR_JMP_TABLE avg,        ssse3,    4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE w_avg,      ssse3,    4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE mask,       ssse3,    4, 8, 16, 32, 64, 128
@@ -116,6 +121,7 @@ BIDIR_JMP_TABLE w_mask_444, ssse3,    4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE blend,      ssse3,    4, 8, 16, 32
 BIDIR_JMP_TABLE blend_v,    ssse3, 2, 4, 8, 16, 32
 BIDIR_JMP_TABLE blend_h,    ssse3, 2, 4, 8, 16, 32, 64, 128
+%endif ; CONFIG_COMPOUND compound_jmp
 
 %macro BASE_JMP_TABLE 3-*
     %xdefine %1_%2_table (%%table - %3)
@@ -8363,6 +8369,7 @@ DECLARE_REG_TMP 7
 DECLARE_REG_TMP 5
 %endif
 
+%if CONFIG_COMPOUND ; compound_fns
 cglobal avg_16bpc, 4, 7, 4, dst, stride, tmp1, tmp2, w, h
 %define base r6-avg_ssse3_table
     LEA                  r6, avg_ssse3_table
@@ -9517,6 +9524,7 @@ cglobal blend_h_16bpc, 3, 7, 6, dst, ds, tmp, w, h, mask
     inc                  hq
     jl .w128
     RET
+%endif ; CONFIG_COMPOUND compound_fns
 
 ; emu_edge args:
 ; const intptr_t bw, const intptr_t bh, const intptr_t iw, const intptr_t ih,

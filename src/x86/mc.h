@@ -74,6 +74,8 @@ decl_fn(mct_scaled, dav1d_prep_bilin_scaled);
 
 #endif
 
+#if CONFIG_COMPOUND
+/* CONFIG_COMPOUND mc */
 decl_fn(avg, dav1d_avg);
 decl_fn(w_avg, dav1d_w_avg);
 decl_fn(mask, dav1d_mask);
@@ -85,6 +87,7 @@ decl_fn(w_mask, dav1d_w_mask_444);
 decl_fn(blend, dav1d_blend);
 decl_fn(blend_dir, dav1d_blend_v);
 decl_fn(blend_dir, dav1d_blend_h);
+#endif
 
 #if CONFIG_WARP
 /* CONFIG_WARP mc */
@@ -136,6 +139,7 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
 
 #endif
 
+#if CONFIG_COMPOUND
     c->avg = BF(dav1d_avg, ssse3);
     c->w_avg = BF(dav1d_w_avg, ssse3);
     c->mask = BF(dav1d_mask, ssse3);
@@ -147,6 +151,7 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     c->blend = BF(dav1d_blend, ssse3);
     c->blend_v = BF(dav1d_blend_v, ssse3);
     c->blend_h = BF(dav1d_blend_h, ssse3);
+#endif
 #if CONFIG_WARP
     c->warp8x8  = BF(dav1d_warp_affine_8x8, ssse3);
     c->warp8x8t = BF(dav1d_warp_affine_8x8t, ssse3);
@@ -198,6 +203,7 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
 
 #endif
 
+#if CONFIG_COMPOUND
     c->avg = BF(dav1d_avg, avx2);
     c->w_avg = BF(dav1d_w_avg, avx2);
     c->mask = BF(dav1d_mask, avx2);
@@ -209,6 +215,7 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     c->blend = BF(dav1d_blend, avx2);
     c->blend_v = BF(dav1d_blend_v, avx2);
     c->blend_h = BF(dav1d_blend_h, avx2);
+#endif
 #if CONFIG_WARP
     c->warp8x8  = BF(dav1d_warp_affine_8x8, avx2);
     c->warp8x8t = BF(dav1d_warp_affine_8x8t, avx2);
@@ -226,6 +233,7 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     init_mc_fn (FILTER_2D_BILINEAR,            bilin,               avx512icl);
     init_mct_fn(FILTER_2D_BILINEAR,            bilin,               avx512icl);
 
+#if CONFIG_COMPOUND
     c->avg = BF(dav1d_avg, avx512icl);
     c->w_avg = BF(dav1d_w_avg, avx512icl);
     c->mask = BF(dav1d_mask, avx512icl);
@@ -237,6 +245,7 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     c->blend = BF(dav1d_blend, avx512icl);
     c->blend_v = BF(dav1d_blend_v, avx512icl);
     c->blend_h = BF(dav1d_blend_h, avx512icl);
+#endif
 
     if (!(flags & DAV1D_X86_CPU_FLAG_SLOW_GATHER)) {
 #if CONFIG_SUPERRES

@@ -56,8 +56,10 @@ decl_w_mask_fn(BF(dav1d_w_mask_422_vl256, rvv));
 #endif
 decl_w_mask_fn(BF(dav1d_w_mask_420_vl256, rvv));
 
+#if CONFIG_WARP
 decl_warp8x8_fn(BF(dav1d_warp_8x8, rvv));
 decl_warp8x8t_fn(BF(dav1d_warp_8x8t, rvv));
+#endif
 decl_emu_edge_fn(BF(dav1d_emu_edge, rvv));
 
 decl_8tap_fns(rvv);
@@ -98,8 +100,10 @@ static ALWAYS_INLINE void mc_dsp_init_riscv(Dav1dMCDSPContext *const c) {
   c->w_avg   = BF(dav1d_w_avg, rvv);
   c->mask    = BF(dav1d_mask, rvv);
 
+#if CONFIG_WARP
   c->warp8x8 = BF(dav1d_warp_8x8, rvv);
   c->warp8x8t = BF(dav1d_warp_8x8t, rvv);
+#endif
 
   init_8tap_fns(rvv);
 

@@ -100,6 +100,7 @@ pd_0x3ff: times 4 dd 0x3ff
 pd_0x4000:times 4 dd 0x4000
 pq_0x40000000: times 2 dq 0x40000000
 
+%if CONFIG_WARP ; warp_filter2
 const mc_warp_filter2 ; dav1d_mc_warp_filter[] reordered for pmaddubsw usage
     ; [-1, 0)
     db 0, 127,   0, 0,   0,   1, 0, 0, 0, 127,   0, 0,  -1,   2, 0, 0
@@ -202,6 +203,7 @@ const mc_warp_filter2 ; dav1d_mc_warp_filter[] reordered for pmaddubsw usage
     db 0, 0,   4,  -3, 0,  -1, 127, 1, 0, 0,   2,  -1, 0,   0, 127, 0
     db 0, 0,   2,  -1, 0,   0, 127, 0
 
+%endif ; CONFIG_WARP warp_filter2
 pw_258:  times 2 dw 258
 
 cextern mc_subpel_filters
@@ -8070,6 +8072,7 @@ MC_8TAP_SCALED prep
  %endif
 %endmacro
 
+%if CONFIG_WARP ; warp_fns
 %macro WARP_V 10 ; dst0, dst1, 0, 2, 4, 6, 1, 3, 5, 7
  %if ARCH_X86_32
   %define m8  m4
@@ -8573,6 +8576,7 @@ DECLARE_REG_TMP 6, 4
 %else
 DECLARE_REG_TMP 6, 7
 %endif
+%endif ; CONFIG_WARP warp_fns
 
 %macro BIDIR_FN 1 ; op
     %1                    0
@@ -10146,8 +10150,10 @@ cglobal resize_8bpc, 0, 6, 8, 3 * 16, dst, dst_stride, src, src_stride, \
     RET
 
 %endif ; CONFIG_SUPERRES resize
+%if CONFIG_WARP ; warp_init
 INIT_XMM ssse3
 WARP_AFFINE_8X8
 
 INIT_XMM sse4
 WARP_AFFINE_8X8
+%endif ; CONFIG_WARP warp_init

@@ -51,9 +51,12 @@ libdav1d_sources = files(
     'scan.c',
     'tables.c',
     'thread_task.c',
-    'warpmv.c',
     'wedge.c',
 )
+
+if get_option('enable_warp')
+    libdav1d_sources += files('warpmv.c')
+endif
 
 # libdav1d bitdepth source files
 # These files are compiled for each bitdepth with

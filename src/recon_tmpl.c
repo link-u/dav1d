@@ -1116,6 +1116,7 @@ static int obmc(Dav1dTaskContext *const t,
     return 0;
 }
 
+#if CONFIG_WARP
 static int warp_affine(Dav1dTaskContext *const t,
                        pixel *dst8, int16_t *dst16, const ptrdiff_t dstride,
                        const uint8_t *const b_dim, const int pl,
@@ -1176,6 +1177,8 @@ static int warp_affine(Dav1dTaskContext *const t,
     }
     return 0;
 }
+
+#endif /* CONFIG_WARP */
 
 void bytefn(dav1d_recon_b_intra)(Dav1dTaskContext *const t, const enum BlockSize bs,
                                  const enum EdgeFlags intra_edge_flags,
@@ -1601,6 +1604,7 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
         const Dav1dThreadPicture *const refp = &f->refp[b->ref[0]];
         const enum Filter2d filter_2d = b->filter2d;
 
+#if CONFIG_WARP
         if (imin(bw4, bh4) > 1 &&
             ((b->inter_mode == GLOBALMV && f->gmv_warp_allowed[b->ref[0]]) ||
              (b->motion_mode == MM_WARP && t->warpmv.type > DAV1D_WM_TYPE_TRANSLATION)))
@@ -1609,7 +1613,9 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
                               b->motion_mode == MM_WARP ? &t->warpmv :
                                   &f->frame_hdr->gmv[b->ref[0]]);
             if (res) return res;
-        } else {
+        } else
+#endif
+        {
             res = mc(t, dst, NULL, f->cur.stride[0],
                      bw4, bh4, t->bx, t->by, 0, b->mv[0], refp, b->ref[0], filter_2d);
             if (res) return res;
@@ -1713,6 +1719,7 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
                 if (res) return res;
             }
         } else {
+#if CONFIG_WARP
             if (imin(cbw4, cbh4) > 1 &&
                 ((b->inter_mode == GLOBALMV && f->gmv_warp_allowed[b->ref[0]]) ||
                  (b->motion_mode == MM_WARP && t->warpmv.type > DAV1D_WM_TYPE_TRANSLATION)))
@@ -1724,7 +1731,9 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
                                           &f->frame_hdr->gmv[b->ref[0]]);
                     if (res) return res;
                 }
-            } else {
+            } else
+#endif
+            {
                 for (int pl = 0; pl < 2; pl++) {
                     res = mc(t, ((pixel *) f->cur.data[1 + pl]) + uvdstoff,
                              NULL, f->cur.stride[1],
@@ -1793,11 +1802,14 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
         for (int i = 0; i < 2; i++) {
             const Dav1dThreadPicture *const refp = &f->refp[b->ref[i]];
 
+#if CONFIG_WARP
             if (b->inter_mode == GLOBALMV_GLOBALMV && f->gmv_warp_allowed[b->ref[i]]) {
                 res = warp_affine(t, NULL, tmp[i], bw4 * 4, b_dim, 0, refp,
                                   &f->frame_hdr->gmv[b->ref[i]]);
                 if (res) return res;
-            } else {
+            } else
+#endif
+            {
                 res = mc(t, NULL, tmp[i], 0, bw4, bh4, t->bx, t->by, 0,
                          b->mv[i], refp, b->ref[i], filter_2d);
                 if (res) return res;
@@ -1834,6 +1846,7 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
         if (has_chroma) for (int pl = 0; pl < 2; pl++) {
             for (int i = 0; i < 2; i++) {
                 const Dav1dThreadPicture *const refp = &f->refp[b->ref[i]];
+#if CONFIG_WARP
                 if (b->inter_mode == GLOBALMV_GLOBALMV &&
                     imin(cbw4, cbh4) > 1 && f->gmv_warp_allowed[b->ref[i]])
                 {
@@ -1841,7 +1854,9 @@ int bytefn(dav1d_recon_b_inter)(Dav1dTaskContext *const t, const enum BlockSize 
                                       b_dim, 1 + pl,
                                       refp, &f->frame_hdr->gmv[b->ref[i]]);
                     if (res) return res;
-                } else {
+                } else
+#endif
+                {
                     res = mc(t, NULL, tmp[i], 0, bw4, bh4, t->bx, t->by,
                              1 + pl, b->mv[i], refp, b->ref[i], filter_2d);
                     if (res) return res;

@@ -1068,6 +1068,14 @@ static int parse_frame_hdr(Dav1dContext *const c, GetBits *const gb) {
             mat[1] = dav1d_get_bits_subexp(gb, ref_mat[1] >> shift, bits) * (1 << shift);
         }
     }
+#if !CONFIG_WARP
+    if (hdr->warp_motion)
+        return DAV1D_ERR(ENOPROTOOPT);
+    for (int i = 0; i < 7; i++) {
+        if (hdr->gmv[i].type > DAV1D_WM_TYPE_TRANSLATION)
+            return DAV1D_ERR(ENOPROTOOPT);
+    }
+#endif
 #if DEBUG_FRAME_HDR
     printf("HDR: post-gmv: off=%td\n",
            (gb->ptr - init_ptr) * 8 - gb->bits_left);

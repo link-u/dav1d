@@ -60,6 +60,11 @@ option('enable_superres',
     value: true,
     description: 'Enable frame super-resolution, reference scaling MC, and resize DSP')
 
+option('enable_warp',
+    type: 'boolean',
+    value: true,
+    description: 'Enable warped motion / affine global motion DSP')
+
 option('testdata_tests',
     type: 'boolean',
     value: false,

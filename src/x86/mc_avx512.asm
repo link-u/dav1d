@@ -204,7 +204,9 @@ pd_512:             dd 512
 
 cextern mc_subpel_filters
 %define subpel_filters (mangle(private_prefix %+ _mc_subpel_filters)-8)
+%if CONFIG_WARP
 cextern mc_warp_filter
+%endif
 %if CONFIG_SUPERRES
 cextern resize_filter
 %endif
@@ -4164,6 +4166,7 @@ cglobal prep_8tap_8bpc, 4, 8, 0, tmp, src, stride, w, h, mx, my, stride3
     jg .hv_w16_loop0
     RET
 
+%if CONFIG_WARP ; warp_fns
 cglobal warp_affine_8x8t_8bpc, 4, 7, 22, tmp, ts
     vpbroadcastd         m9, [pd_16384]
     mova               ym15, [warp_8x8t_end]
@@ -4293,6 +4296,7 @@ ALIGN function_align
     vpmultishiftqb       m0, m12, m0          ; 1 1 2 2 (>> 3)
     ret
 
+%endif ; CONFIG_WARP warp_fns
 %macro BIDIR_FN 1 ; op
     lea            stride3q, [strideq*3]
     jmp                  wq

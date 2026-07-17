@@ -51,8 +51,10 @@ decl_w_mask_fn(BF(dav1d_w_mask_422, neon));
 #endif
 decl_w_mask_fn(BF(dav1d_w_mask_420, neon));
 
+#if CONFIG_WARP
 decl_warp8x8_fn(BF(dav1d_warp_affine_8x8, neon));
 decl_warp8x8t_fn(BF(dav1d_warp_affine_8x8t, neon));
+#endif
 
 decl_emu_edge_fn(BF(dav1d_emu_edge, neon));
 
@@ -81,8 +83,10 @@ static ALWAYS_INLINE void mc_dsp_init_arm(Dav1dMCDSPContext *const c) {
     c->w_mask[1] = BF(dav1d_w_mask_422, neon);
 #endif
     c->w_mask[2] = BF(dav1d_w_mask_420, neon);
+#if CONFIG_WARP
     c->warp8x8 = BF(dav1d_warp_affine_8x8, neon);
     c->warp8x8t = BF(dav1d_warp_affine_8x8t, neon);
+#endif
     c->emu_edge = BF(dav1d_emu_edge, neon);
 
 #if ARCH_AARCH64

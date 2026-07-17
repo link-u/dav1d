@@ -789,8 +789,10 @@ void bitfn(checkasm_check_mc)(void) {
     check_blend(&c);
     check_blend_v(&c);
     check_blend_h(&c);
+#if CONFIG_WARP
     check_warp8x8(&c);
     check_warp8x8t(&c);
+#endif
     check_emuedge(&c);
 #if CONFIG_SUPERRES
     check_resize(&c);

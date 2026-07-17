@@ -836,6 +836,8 @@ w_mask_fns(420, 1, 1);
 #define FILTER_WARP_CLIP(src, x, F, stride, sh) \
     iclip_pixel(FILTER_WARP_RND(src, x, F, stride, sh))
 
+/* CONFIG_WARP: warp_affine */
+#if CONFIG_WARP
 static void warp_affine_8x8_c(pixel *dst, const ptrdiff_t dst_stride,
                               const pixel *src, const ptrdiff_t src_stride,
                               const int16_t *const abcd, int mx, int my
@@ -905,6 +907,7 @@ static void warp_affine_8x8t_c(int16_t *tmp, const ptrdiff_t tmp_stride,
     }
 }
 
+#endif /* CONFIG_WARP: warp_affine */
 static void emu_edge_c(const intptr_t bw, const intptr_t bh,
                        const intptr_t iw, const intptr_t ih,
                        const intptr_t x, const intptr_t y,
@@ -1036,8 +1039,10 @@ COLD void bitfn(dav1d_mc_dsp_init)(Dav1dMCDSPContext *const c) {
     c->w_mask[1] = w_mask_422_c;
 #endif
     c->w_mask[2] = w_mask_420_c;
+#if CONFIG_WARP
     c->warp8x8  = warp_affine_8x8_c;
     c->warp8x8t = warp_affine_8x8t_c;
+#endif
     c->emu_edge = emu_edge_c;
 #if CONFIG_SUPERRES
     c->resize   = resize_c;

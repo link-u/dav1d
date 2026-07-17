@@ -40,8 +40,10 @@
 decl_avg_fn(BF(dav1d_avg, lsx));
 decl_w_avg_fn(BF(dav1d_w_avg, lsx));
 decl_mask_fn(BF(dav1d_mask, lsx));
+#if CONFIG_WARP
 decl_warp8x8_fn(BF(dav1d_warp_affine_8x8, lsx));
 decl_warp8x8t_fn(BF(dav1d_warp_affine_8x8t, lsx));
+#endif
 decl_w_mask_fn(BF(dav1d_w_mask_420, lsx));
 decl_blend_fn(BF(dav1d_blend, lsx));
 decl_blend_dir_fn(BF(dav1d_blend_v, lsx));
@@ -53,8 +55,10 @@ decl_8tap_fns(lsx);
 decl_avg_fn(BF(dav1d_avg, lasx));
 decl_w_avg_fn(BF(dav1d_w_avg, lasx));
 decl_mask_fn(BF(dav1d_mask, lasx));
+#if CONFIG_WARP
 decl_warp8x8_fn(BF(dav1d_warp_affine_8x8, lasx));
 decl_warp8x8t_fn(BF(dav1d_warp_affine_8x8t, lasx));
+#endif
 decl_w_mask_fn(BF(dav1d_w_mask_420, lasx));
 decl_blend_dir_fn(BF(dav1d_blend_h, lasx));
 
@@ -69,8 +73,10 @@ static ALWAYS_INLINE void mc_dsp_init_loongarch(Dav1dMCDSPContext *const c) {
     c->avg = BF(dav1d_avg, lsx);
     c->w_avg = BF(dav1d_w_avg, lsx);
     c->mask = BF(dav1d_mask, lsx);
+#if CONFIG_WARP
     c->warp8x8 = BF(dav1d_warp_affine_8x8, lsx);
     c->warp8x8t = BF(dav1d_warp_affine_8x8t, lsx);
+#endif
     c->w_mask[2] = BF(dav1d_w_mask_420, lsx);
     c->blend = BF(dav1d_blend, lsx);
     c->blend_v = BF(dav1d_blend_v, lsx);
@@ -84,8 +90,10 @@ static ALWAYS_INLINE void mc_dsp_init_loongarch(Dav1dMCDSPContext *const c) {
     c->avg = BF(dav1d_avg, lasx);
     c->w_avg = BF(dav1d_w_avg, lasx);
     c->mask = BF(dav1d_mask, lasx);
+#if CONFIG_WARP
     c->warp8x8 = BF(dav1d_warp_affine_8x8, lasx);
     c->warp8x8t = BF(dav1d_warp_affine_8x8t, lasx);
+#endif
     c->w_mask[2] = BF(dav1d_w_mask_420, lasx);
     c->blend_h = BF(dav1d_blend_h, lasx);
 

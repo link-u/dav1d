@@ -92,7 +92,9 @@ pd_0x4000:       dd 0x4000
 pq_0x40000000:   dq 0x40000000
 
 cextern mc_subpel_filters
+%if CONFIG_WARP
 cextern mc_warp_filter2
+%endif
 %if CONFIG_SUPERRES
 cextern resize_filter
 %endif
@@ -4954,6 +4956,7 @@ PREP_8TAP_SCALED_FN regular,        REGULAR, REGULAR
 MC_8TAP_SCALED prep
 %endif ; CONFIG_SUPERRES scaled_fns
 
+%if CONFIG_WARP ; warp_fns
 %macro WARP_V 5 ; dst, 02, 46, 13, 57
     ; Can be done using gathers, but that's terribly slow on many CPU:s
     lea               tmp1d, [myq+gammaq*4]
@@ -5141,6 +5144,7 @@ ALIGN function_align
     paddd                m0, m15 ; rounded 14-bit result in upper 16 bits of dword
     ret
 
+%endif ; CONFIG_WARP warp_fns
 %macro BIDIR_FN 1 ; op
     %1                    0
     lea            stride3q, [strideq*3]

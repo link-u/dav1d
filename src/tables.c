@@ -546,6 +546,8 @@ const int8_t ALIGN(dav1d_mc_subpel_filters[6][15][8], 8) = {
     }
 };
 
+/* CONFIG_WARP: mc_warp_filter */
+#if CONFIG_WARP
 ATTR_MCMODEL_SMALL
 const int8_t ALIGN(dav1d_mc_warp_filter[193][8], 8) = {
     // [-1, 0)
@@ -650,6 +652,7 @@ const int8_t ALIGN(dav1d_mc_warp_filter[193][8], 8) = {
     // dummy (replicate row index 191)
     { 0, 0, 0,   0,   2, 127,  -1, 0 },
 };
+#endif /* CONFIG_WARP */
 
 #if CONFIG_SUPERRES
 ATTR_MCMODEL_SMALL

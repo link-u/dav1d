@@ -101,6 +101,10 @@ cdata.set10('CONFIG_FRAME_DELAY', get_option('enable_frame_delay'))
 cdata.set10('CONFIG_SUPERRES', get_option('enable_superres'))
 cdata_asm.set10('CONFIG_SUPERRES', get_option('enable_superres'))
 
+# Warped motion / affine global motion
+cdata.set10('CONFIG_WARP', get_option('enable_warp'))
+cdata_asm.set10('CONFIG_WARP', get_option('enable_warp'))
+
 #
 # OS/Compiler checks and defines
 #

@@ -51,7 +51,9 @@
 #include "src/ref.h"
 #include "src/tables.h"
 #include "src/thread_task.h"
+#if CONFIG_WARP
 #include "src/warpmv.h"
+#endif
 
 static void init_quant_tables(const Dav1dSequenceHeader *const seq_hdr,
                               const Dav1dFrameHeader *const frame_hdr,
@@ -263,6 +265,8 @@ static void find_matching_ref(const Dav1dTaskContext *const t,
 #undef matches
 }
 
+/* CONFIG_WARP: derive_warpmv */
+#if CONFIG_WARP
 static void derive_warpmv(const Dav1dTaskContext *const t,
                           const int bw4, const int bh4,
                           const uint64_t masks[2], const union mv mv,
@@ -337,6 +341,7 @@ static void derive_warpmv(const Dav1dTaskContext *const t,
     } else
         wmp->type = DAV1D_WM_TYPE_IDENTITY;
 }
+#endif /* CONFIG_WARP */
 
 static inline int findoddzero(const uint8_t *buf, int len) {
     for (int n = 0; n < len; n++)
@@ -738,6 +743,7 @@ static int decode_b(Dav1dTaskContext *const t,
                 dav1d_memset_pow2[ulog2(cbh4)](&t->l.uvmode[cby4], uv_mode);
             }
         } else {
+#if CONFIG_WARP
             if (IS_INTER_OR_SWITCH(f->frame_hdr) /* not intrabc */ &&
                 b->comp_type == COMP_INTER_NONE && b->motion_mode == MM_WARP)
             {
@@ -770,6 +776,7 @@ static int decode_b(Dav1dTaskContext *const t,
 #undef signabs
                 }
             }
+#endif /* CONFIG_WARP */
             if (f->bd_fn.recon_b_inter(t, bs, b)) return -1;
 
             const uint8_t *const filter = dav1d_filter_dir[b->filter2d];
@@ -1788,14 +1795,19 @@ static int decode_b(Dav1dTaskContext *const t,
                 uint64_t mask[2] = { 0, 0 };
                 find_matching_ref(t, intra_edge_flags, bw4, bh4, w4, h4,
                                   have_left, have_top, b->ref[0], mask);
+#if CONFIG_WARP
                 const int allow_warp = !f->svc[b->ref[0]][0].scale &&
                     !f->frame_hdr->force_integer_mv &&
                     f->frame_hdr->warp_motion && (mask[0] | mask[1]);
+#else
+                const int allow_warp = 0;
+#endif
 
                 b->motion_mode = allow_warp ?
                     dav1d_msac_decode_symbol_adapt4(&ts->msac,
                         ts->cdf.m.motion_mode[bs], 2) :
                     dav1d_msac_decode_bool_adapt(&ts->msac, ts->cdf.m.obmc[bs]);
+#if CONFIG_WARP
                 if (b->motion_mode == MM_WARP) {
                     has_subpel_filter = 0;
                     derive_warpmv(t, bw4, bh4, mask, b->mv[0], &t->warpmv);
@@ -1827,6 +1839,7 @@ static int decode_b(Dav1dTaskContext *const t,
                         }
                     }
                 }
+#endif /* CONFIG_WARP */
 
                 if (DEBUG_BLOCK_INFO)
                     printf("Post-motionmode[%d]: r=%d [mask: 0x%" PRIx64 "/0x%"
@@ -3511,10 +3524,14 @@ int dav1d_submit_frame(Dav1dContext *const c) {
             } else {
                 f->svc[i][0].scale = f->svc[i][1].scale = 0;
             }
+#if CONFIG_WARP
             f->gmv_warp_allowed[i] = f->frame_hdr->gmv[i].type > DAV1D_WM_TYPE_TRANSLATION &&
                                      !f->frame_hdr->force_integer_mv &&
                                      !dav1d_get_shear_params(&f->frame_hdr->gmv[i]) &&
                                      !f->svc[i][0].scale;
+#else
+            f->gmv_warp_allowed[i] = 0;
+#endif
         }
     }
 

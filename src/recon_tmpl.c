@@ -991,6 +991,9 @@ static int mc(Dav1dTaskContext *const t,
                                       HIGHBD_CALL_SUFFIX);
         }
     } else {
+#if !CONFIG_SUPERRES
+        return DAV1D_ERR(ENOPROTOOPT);
+#else
         assert(refp != &f->sr_cur);
 
         const int orig_pos_y = (by * v_mul << 4) + mvy * (1 << !ss_ver);
@@ -1031,7 +1034,6 @@ static int mc(Dav1dTaskContext *const t,
             ref = ((pixel *) refp->p.data[pl]) + PXSTRIDE(ref_stride) * top + left;
         }
 
-#if CONFIG_SUPERRES
         if (dst8 != NULL) {
             f->dsp->mc.mc_scaled[filter_2d](dst8, dst_stride, ref, ref_stride,
                                             bw4 * h_mul, bh4 * v_mul,
@@ -1047,9 +1049,7 @@ static int mc(Dav1dTaskContext *const t,
                                              f->svc[refidx][1].step
                                              HIGHBD_CALL_SUFFIX);
         }
-#else
-        return DAV1D_ERR(ENOPROTOOPT);
-#endif
+#endif /* CONFIG_SUPERRES */
     }
 
     return 0;

@@ -126,6 +126,8 @@ EXTERN const int8_t dav1d_filter_intra_taps[5][64];
 EXTERN const uint8_t dav1d_obmc_masks[64];
 #endif
 
+#if CONFIG_FILMGRAIN
 EXTERN const int16_t dav1d_gaussian_sequence[2048]; // for fgs
+#endif
 
 #endif /* DAV1D_SRC_TABLES_H */

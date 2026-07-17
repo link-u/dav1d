@@ -414,6 +414,7 @@ struct Dav1dTaskContext {
     uint8_t pal_sz_uv[2 /* a/l */][32 /* bx4/by4 */];
     ALIGN(union, 64) {
         struct {
+#if CONFIG_COMPOUND
             union {
                 uint8_t  lap_8bpc [128 * 32];
                 uint16_t lap_16bpc[128 * 32];
@@ -422,10 +423,17 @@ struct Dav1dTaskContext {
                     uint8_t seg_mask[128 * 128];
                 };
             };
+#endif
             union {
-                // stride=192 for non-SVC, or 320 for SVC
+#if CONFIG_SUPERRES
+                /* stride=192 for non-SVC, or 320 for SVC */
                 uint8_t  emu_edge_8bpc [320 * (256 + 7)];
                 uint16_t emu_edge_16bpc[320 * (256 + 7)];
+#else
+                /* Non-scaled refs only: stride 192, max 128x128 + 7-tap margin */
+                uint8_t  emu_edge_8bpc [192 * (128 + 7)];
+                uint16_t emu_edge_16bpc[192 * (128 + 7)];
+#endif
             };
         };
         struct {
@@ -444,12 +452,16 @@ struct Dav1dTaskContext {
             uint8_t pal_idx_uv[64 * 64]; /* also used as pre-pack scratch buffer */
             union {
                 struct {
+#if CONFIG_COMPOUND
                     uint8_t interintra_8bpc[64 * 64];
+#endif
                     uint8_t edge_8bpc[257];
                     ALIGN(uint8_t pal_8bpc[3 /* plane */][8 /* palette_idx */], 8);
                 };
                 struct {
+#if CONFIG_COMPOUND
                     uint16_t interintra_16bpc[64 * 64];
+#endif
                     uint16_t edge_16bpc[257];
                     ALIGN(uint16_t pal_16bpc[3 /* plane */][8 /* palette_idx */], 16);
                 };
@@ -457,7 +469,9 @@ struct Dav1dTaskContext {
         };
     } scratch;
 
+#if CONFIG_WARP
     Dav1dWarpedMotionParams warpmv;
+#endif
     Av1Filter *lf_mask;
     int top_pre_cdef_toggle;
     int8_t *cur_sb_cdef_idx_ptr;

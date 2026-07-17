@@ -1990,6 +1990,7 @@ static int decode_b(Dav1dTaskContext *const t,
         // keep track of motion vectors for each reference
         if (b->comp_type == COMP_INTER_NONE) {
             // y
+#if CONFIG_WARP
             if (imin(bw4, bh4) > 1 &&
                 ((b->inter_mode == GLOBALMV && f->gmv_warp_allowed[b->ref[0]]) ||
                  (b->motion_mode == MM_WARP && t->warpmv.type > DAV1D_WM_TYPE_TRANSLATION)))
@@ -1997,7 +1998,9 @@ static int decode_b(Dav1dTaskContext *const t,
                 affine_lowest_px_luma(t, &lowest_px[b->ref[0]][0], b_dim,
                                       b->motion_mode == MM_WARP ? &t->warpmv :
                                       &f->frame_hdr->gmv[b->ref[0]]);
-            } else {
+            } else
+#endif
+            {
                 mc_lowest_px(&lowest_px[b->ref[0]][0], t->by, bh4, b->mv[0].y,
                              0, &f->svc[b->ref[0]][1]);
 #if CONFIG_COMPOUND
@@ -2045,6 +2048,7 @@ static int decode_b(Dav1dTaskContext *const t,
                     mc_lowest_px(&lowest_px[b->ref[0]][1], t->by, bh4,
                                  b->mv[0].y, ss_ver, &f->svc[b->ref[0]][1]);
                 } else {
+#if CONFIG_WARP
                     if (imin(cbw4, cbh4) > 1 &&
                         ((b->inter_mode == GLOBALMV && f->gmv_warp_allowed[b->ref[0]]) ||
                          (b->motion_mode == MM_WARP && t->warpmv.type > DAV1D_WM_TYPE_TRANSLATION)))
@@ -2052,7 +2056,9 @@ static int decode_b(Dav1dTaskContext *const t,
                         affine_lowest_px_chroma(t, &lowest_px[b->ref[0]][1], b_dim,
                                                 b->motion_mode == MM_WARP ? &t->warpmv :
                                                 &f->frame_hdr->gmv[b->ref[0]]);
-                    } else {
+                    } else
+#endif
+                    {
                         mc_lowest_px(&lowest_px[b->ref[0]][1],
                                      t->by & ~ss_ver, bh4 << (bh4 == ss_ver),
                                      b->mv[0].y, ss_ver, &f->svc[b->ref[0]][1]);

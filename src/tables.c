@@ -835,6 +835,7 @@ const uint8_t ALIGN(dav1d_obmc_masks[64], 16) = {
 };
 #endif /* CONFIG_COMPOUND */
 
+#if CONFIG_FILMGRAIN
 // Taken from the spec. Range is [-2048, 2047], mean is 0 and stddev is 512
 ATTR_MCMODEL_SMALL
 const int16_t dav1d_gaussian_sequence[2048] = {
@@ -1026,3 +1027,4 @@ const int16_t dav1d_gaussian_sequence[2048] = {
     104,   32,    -296,  -32,   788,   -80,   32,    -16,   280,   288,  944,
     428,   -484
 };
+#endif /* CONFIG_FILMGRAIN */

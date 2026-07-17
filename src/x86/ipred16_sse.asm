@@ -96,7 +96,9 @@ JMP_TABLE ipred_z3_16bpc,         ssse3, h4, h8, h16, h32, h64
 JMP_TABLE ipred_cfl_16bpc,        ssse3, h4, h8, h16, h32, w4, w8, w16, w32, \
                                          s4-8*4, s8-8*4, s16-8*4, s32-8*4
 JMP_TABLE ipred_cfl_left_16bpc,   ssse3, h4, h8, h16, h32
+%if CONFIG_422_444
 JMP_TABLE ipred_cfl_ac_444_16bpc, ssse3, w4, w8, w16, w32
+%endif
 JMP_TABLE pal_pred_16bpc,         ssse3, w4, w8, w16, w32, w64
 
 cextern smooth_weights_1d_16bpc
@@ -3651,6 +3653,7 @@ cglobal ipred_cfl_ac_420_16bpc, 3, 7, 6, ac, ypx, stride, wpad, hpad, w, h
     jl .dc_loop
     RET
 
+%if CONFIG_422_444
 cglobal ipred_cfl_ac_422_16bpc, 3, 7, 6, ac, ypx, stride, wpad, hpad, w, h
     movifnidn         hpadd, hpadm
 %if ARCH_X86_32 && PIC
@@ -3963,6 +3966,7 @@ cglobal ipred_cfl_ac_444_16bpc, 3, 7, 6, ac, ypx, stride, wpad, hpad, w, h
     dec               hpadd
     jg .w32_hpad_loop
     jmp mangle(private_prefix %+ _ipred_cfl_ac_420_16bpc_ssse3).dc
+%endif
 
 cglobal pal_pred_16bpc, 4, 5, 6, dst, stride, pal, idx, w, h
 %define base r2-pal_pred_16bpc_ssse3_table

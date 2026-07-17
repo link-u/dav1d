@@ -4710,6 +4710,7 @@ jumptable ipred_cfl_ac_420_w16_tbl
         .word L(ipred_cfl_ac_420_w16_wpad3) - ipred_cfl_ac_420_w16_tbl
 endjumptable
 
+#if CONFIG_422_444
 // void cfl_ac_422_8bpc_neon(int16_t *const ac, const pixel *const ypx,
 //                           const ptrdiff_t stride, const int w_pad,
 //                           const int h_pad, const int cw, const int ch);
@@ -5230,3 +5231,4 @@ jumptable ipred_cfl_ac_444_w32_tbl
         .word L(ipred_cfl_ac_444_w32_wpad4) - ipred_cfl_ac_444_w32_tbl
         .word L(ipred_cfl_ac_444_w32_wpad6) - ipred_cfl_ac_444_w32_tbl
 endjumptable
+#endif

@@ -2443,6 +2443,7 @@ L(ipred_cfl_ac_420_w16_hpad):
         b               L(ipred_cfl_ac_420_w4_calc_subtract_dc)
 endfunc
 
+#if CONFIG_422_444
 // void cfl_ac_422_8bpc_neon(int16_t *const ac, const pixel *const ypx,
 //                           const ptrdiff_t stride, const int w_pad,
 //                           const int h_pad, const int cw, const int ch);
@@ -2956,3 +2957,4 @@ L(ipred_cfl_ac_444_w32_hpad):
         vdup.16         q8,  d16[0]
         b               L(ipred_cfl_ac_420_w4_subtract_dc)
 endfunc
+#endif

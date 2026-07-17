@@ -64,8 +64,10 @@ pw_16: times 2 dw 16
 
 JMP_TABLE generate_grain_y_16bpc_ssse3, 0, 1, 2, 3
 JMP_TABLE generate_grain_uv_420_16bpc_ssse3, 0, 1, 2, 3
+%if CONFIG_422_444
 JMP_TABLE generate_grain_uv_422_16bpc_ssse3, 0, 1, 2, 3
 JMP_TABLE generate_grain_uv_444_16bpc_ssse3, 0, 1, 2, 3
+%endif
 
 SECTION .text
 
@@ -1391,8 +1393,10 @@ cglobal generate_grain_uv_%1_16bpc, 1, 7, 8, buf, x, pic_reg, fg_data, h
 %endmacro
 
 generate_grain_uv_fn 420, 1, 1
+%if CONFIG_422_444
 generate_grain_uv_fn 422, 1, 0
 generate_grain_uv_fn 444, 0, 0
+%endif
 
 %macro SCRATCH 3
 %if ARCH_X86_32
@@ -3411,5 +3415,7 @@ DECLARE_ARG 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
 %endmacro
 
 FGUV_FN 420, 1, 1
+%if CONFIG_422_444
 FGUV_FN 422, 1, 0
 FGUV_FN 444, 0, 0
+%endif

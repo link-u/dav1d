@@ -244,7 +244,9 @@ BIDIR_JMP_TABLE avg,        avx512icl,       4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE w_avg,      avx512icl,       4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE mask,       avx512icl,       4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE w_mask_420, avx512icl,       4, 8, 16, 32, 64, 128
+%if CONFIG_422_444
 BIDIR_JMP_TABLE w_mask_422, avx512icl,       4, 8, 16, 32, 64, 128
+%endif
 BIDIR_JMP_TABLE w_mask_444, avx512icl,       4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE blend,      avx512icl,       4, 8, 16, 32
 BIDIR_JMP_TABLE blend_v,    avx512icl,    2, 4, 8, 16, 32
@@ -5340,6 +5342,7 @@ ALIGN function_align
     vpsrlvw              m1, m13
     ret
 
+%if CONFIG_422_444
 cglobal w_mask_422_16bpc, 4, 8, 15, dst, stride, tmp1, tmp2, w, h, mask, stride3
 %define base r7-w_mask_422_avx512icl_table
     lea                  r7, [w_mask_422_avx512icl_table]
@@ -5501,6 +5504,7 @@ ALIGN function_align
     mova            [maskq], ym5
     add               maskq, 32
     ret
+%endif
 
 cglobal w_mask_444_16bpc, 4, 8, 13, dst, stride, tmp1, tmp2, w, h, mask, stride3
 %define base r7-w_mask_444_avx512icl_table

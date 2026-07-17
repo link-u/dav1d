@@ -731,6 +731,7 @@ cglobal cdef_filter_4x4_16bpc, 2, 7, 8, -32*11, dst, stride, edge, top, left
 .padding_done:
     CDEF_FILTER      4, 4
 
+%if CONFIG_422_444
 %if ARCH_X86_64
 cglobal cdef_filter_4x8_16bpc, 5, 9, 9, 32*14, dst, stride, left, top, bot, \
                                                pri, sec, edge
@@ -829,6 +830,7 @@ cglobal cdef_filter_4x8_16bpc, 2, 7, 8, -32*15, dst, stride, edge, top, left
     REPX {movd [px+32*x+8], m7}, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 .padding_done:
     CDEF_FILTER      4, 8
+%endif
 
 %if ARCH_X86_64
 cglobal cdef_filter_8x8_16bpc, 5, 9, 9, 32*14, dst, stride, left, top, bot, \

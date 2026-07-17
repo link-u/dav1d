@@ -204,6 +204,7 @@ cglobal cdef_filter_4x4_16bpc, 5, 7, 16, dst, stride, left, top, bot, \
 ; L0 L1 00 01 02 03 04 05   L8 L9 40 41 42 43 44 45   b0 b1 b2 b3 b4 b5 b6 b7
 ; L2 L3 10 11 12 13 14 15   La Lb 50 51 52 53 54 55   B0 B1 B2 B3 B4 B5 B6 B7
 
+%if CONFIG_422_444
 cglobal cdef_filter_4x8_16bpc, 5, 7, 22, dst, stride, left, top, bot, \
                                          pri, sec, dir, damping, edge
     lea             r6, [cdef_dirs4]
@@ -391,6 +392,7 @@ cglobal cdef_filter_4x8_16bpc, 5, 7, 22, dst, stride, left, top, bot, \
     CONSTRAIN      m10, m9, m19, m12, m13, m14, m11
     vpdpwssd       m17, m10, m15
     ret
+%endif
 
 cglobal cdef_filter_8x8_16bpc, 5, 7, 22, 64*6, dst, stride, left, top, bot, \
                                                pri, sec, dir, damping, edge

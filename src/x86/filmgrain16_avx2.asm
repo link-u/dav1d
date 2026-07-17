@@ -79,8 +79,10 @@ pb_8_9_0_1:            db 8, 9, 0, 1
 
 JMP_TABLE generate_grain_y_16bpc_avx2, 0, 1, 2, 3
 JMP_TABLE generate_grain_uv_420_16bpc_avx2, 0, 1, 2, 3
+%if CONFIG_422_444
 JMP_TABLE generate_grain_uv_422_16bpc_avx2, 0, 1, 2, 3
 JMP_TABLE generate_grain_uv_444_16bpc_avx2, 0, 1, 2, 3
+%endif
 
 SECTION .text
 
@@ -2221,9 +2223,11 @@ cglobal fguv_32x32xn_i%1_16bpc, 6, 15, 16, dst, src, stride, fg_data, w, scaling
 
 GEN_GRAIN_UV_FN 420, 1, 1
 FGUV_FN 420,         1, 1
+%if CONFIG_422_444
 GEN_GRAIN_UV_FN 422, 1, 0
 FGUV_FN 422,         1, 0
 GEN_GRAIN_UV_FN 444, 0, 0
 FGUV_FN 444,         0, 0
+%endif
 
 %endif ; ARCH_X86_64

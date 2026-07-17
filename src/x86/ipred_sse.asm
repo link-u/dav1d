@@ -4147,6 +4147,7 @@ DECLARE_REG_TMP 4
     jg .sub_loop
     RET
 
+%if CONFIG_422_444
 %if ARCH_X86_64
 cglobal ipred_cfl_ac_422_8bpc, 4, 8, 7, ac, y, stride, wpad, hpad, w, h, ac_bak
     movddup              m2, [pb_4]
@@ -5024,6 +5025,7 @@ cglobal ipred_cfl_ac_444_8bpc, 4, 7, 7, -5*16, ac, y, stride, wpad, hpad, w, h
     sub                 szd, 8
     jg .sub_loop
     RET
+%endif
 
 ; %1 simd register that hold the mask and will hold the result
 ; %2 simd register that holds the "true" values

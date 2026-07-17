@@ -126,7 +126,9 @@ JMP_TABLE ipred_filter_16bpc,     avx2, w4, w8, w16, w32
 JMP_TABLE ipred_cfl_16bpc,        avx2, h4, h8, h16, h32, w4, w8, w16, w32, \
                                         s4-8*4, s8-8*4, s16-8*4, s32-8*4
 JMP_TABLE ipred_cfl_left_16bpc,   avx2, h4, h8, h16, h32
+%if CONFIG_422_444
 JMP_TABLE ipred_cfl_ac_444_16bpc, avx2, w4, w8, w16, w32
+%endif
 JMP_TABLE pal_pred_16bpc,         avx2, w4, w8, w16, w32, w64
 
 cextern dr_intra_derivative
@@ -4567,6 +4569,7 @@ cglobal ipred_cfl_ac_420_16bpc, 4, 7, 6, ac, ypx, stride, wpad, hpad, w, h
     jl .dc_loop
     RET
 
+%if CONFIG_422_444
 cglobal ipred_cfl_ac_422_16bpc, 4, 7, 6, ac, ypx, stride, wpad, hpad, w, h
     movifnidn         hpadd, hpadm
     vpbroadcastd         m5, [pw_4]
@@ -4866,6 +4869,7 @@ cglobal ipred_cfl_ac_444_16bpc, 4, 7, 6, ac, ypx, stride, wpad, hpad, w, h
     dec                  hd
     jg .w32_wpad
     jmp .w32_hpad
+%endif
 
 cglobal pal_pred_16bpc, 4, 6, 6, dst, stride, pal, idx, w, h
     vbroadcasti128       m4, [palq]

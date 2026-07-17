@@ -102,8 +102,10 @@ ipred_h_shuf: db  7,  7,  7,  7,  3,  3,  3,  3,  5,  5,  5,  5,  1,  1,  1,  1
               db  6,  6,  6,  6,  2,  2,  2,  2,  4,  4,  4,  4;  0,  0,  0,  0
 pw_64:        times 2 dw 64
 
+%if CONFIG_422_444
 cfl_ac_444_w16_pad1_shuffle: db 0, -1, 1, -1, 2, -1, 3, -1, 4, -1, 5, -1, 6, -1
                              times 9 db 7, -1
+%endif
 cfl_ac_w16_pad_shuffle: ; w=16, w_pad=1
                         db 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
                         ; w=8, w_pad=1 as well as second half of previous one

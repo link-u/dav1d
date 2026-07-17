@@ -72,8 +72,10 @@ pw_1:                  dw 1
 
 JMP_TABLE generate_grain_y,      avx2, 0, 1, 2, 3
 JMP_TABLE generate_grain_uv_420, avx2, 0, 1, 2, 3
+%if CONFIG_422_444
 JMP_TABLE generate_grain_uv_422, avx2, 0, 1, 2, 3
 JMP_TABLE generate_grain_uv_444, avx2, 0, 1, 2, 3
+%endif
 
 SECTION .text
 
@@ -2086,11 +2088,9 @@ GEN_GRAIN_UV_FN 420, 1, 1
 FGUV_FN         420, 1, 1
 %if CONFIG_422_444
 GEN_GRAIN_UV_FN 422, 1, 0
-%endif
 FGUV_FN         422, 1, 0
-%if CONFIG_422_444
 GEN_GRAIN_UV_FN 444, 0, 0
-%endif
 FGUV_FN         444, 0, 0
+%endif
 
 %endif ; ARCH_X86_64

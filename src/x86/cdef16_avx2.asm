@@ -670,6 +670,7 @@ cglobal cdef_filter_4x4_16bpc, 5, 10, 9, 16*10, dst, stride, left, top, bot, \
 .padding_done:
     CDEF_FILTER      4, 4
 
+%if CONFIG_422_444
 cglobal cdef_filter_4x8_16bpc, 5, 10, 9, 16*14, dst, stride, left, top, bot, \
                                                 pri, sec, edge
     mov          edged, r9m
@@ -758,6 +759,7 @@ cglobal cdef_filter_4x8_16bpc, 5, 10, 9, 16*14, dst, stride, left, top, bot, \
     REPX {movd [px+16*x+8], xm7}, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 .padding_done:
     CDEF_FILTER      4, 8
+%endif
 
 cglobal cdef_filter_8x8_16bpc, 5, 9, 9, 32*13, dst, stride, left, top, bot, \
                                                pri, sec, edge

@@ -186,6 +186,8 @@ put_8tap_c(pixel *dst, ptrdiff_t dst_stride,
         put_c(dst, dst_stride, src, src_stride, w, h);
 }
 
+/* CONFIG_SUPERRES: scaled 8tap */
+#if CONFIG_SUPERRES
 static NOINLINE void
 put_8tap_scaled_c(pixel *dst, const ptrdiff_t dst_stride,
                   const pixel *src, ptrdiff_t src_stride,
@@ -242,6 +244,8 @@ put_8tap_scaled_c(pixel *dst, const ptrdiff_t dst_stride,
         dst += PXSTRIDE(dst_stride);
     }
 }
+
+#endif /* CONFIG_SUPERRES */
 
 static NOINLINE void
 prep_8tap_c(int16_t *tmp, const pixel *src, ptrdiff_t src_stride,
@@ -304,6 +308,7 @@ prep_8tap_c(int16_t *tmp, const pixel *src, ptrdiff_t src_stride,
         prep_c(tmp, src, src_stride, w, h HIGHBD_TAIL_SUFFIX);
 }
 
+#if CONFIG_SUPERRES
 static NOINLINE void
 prep_8tap_scaled_c(int16_t *tmp, const pixel *src, ptrdiff_t src_stride,
                    const int w, int h, const int mx, int my,
@@ -357,6 +362,9 @@ prep_8tap_scaled_c(int16_t *tmp, const pixel *src, ptrdiff_t src_stride,
     }
 }
 
+#endif /* CONFIG_SUPERRES */
+
+#if CONFIG_SUPERRES
 #define filter_fns(type, type_h, type_v) \
 static void put_8tap_##type##_c(pixel *const dst, \
                                 const ptrdiff_t dst_stride, \
@@ -402,6 +410,30 @@ static void prep_8tap_##type##_scaled_c(int16_t *const tmp, \
     prep_8tap_scaled_c(tmp, src, src_stride, w, h, mx, my, dx, dy, \
                        type_h | (type_v << 2) HIGHBD_TAIL_SUFFIX); \
 }
+#else
+#define filter_fns(type, type_h, type_v) \
+static void put_8tap_##type##_c(pixel *const dst, \
+                                const ptrdiff_t dst_stride, \
+                                const pixel *const src, \
+                                const ptrdiff_t src_stride, \
+                                const int w, const int h, \
+                                const int mx, const int my \
+                                HIGHBD_DECL_SUFFIX) \
+{ \
+    put_8tap_c(dst, dst_stride, src, src_stride, w, h, mx, my, \
+               type_h | (type_v << 2) HIGHBD_TAIL_SUFFIX); \
+} \
+static void prep_8tap_##type##_c(int16_t *const tmp, \
+                                 const pixel *const src, \
+                                 const ptrdiff_t src_stride, \
+                                 const int w, const int h, \
+                                 const int mx, const int my \
+                                 HIGHBD_DECL_SUFFIX) \
+{ \
+    prep_8tap_c(tmp, src, src_stride, w, h, mx, my, \
+                type_h | (type_v << 2) HIGHBD_TAIL_SUFFIX); \
+}
+#endif
 
 filter_fns(regular,        DAV1D_FILTER_8TAP_REGULAR, DAV1D_FILTER_8TAP_REGULAR)
 filter_fns(regular_sharp,  DAV1D_FILTER_8TAP_REGULAR, DAV1D_FILTER_8TAP_SHARP)
@@ -488,6 +520,7 @@ static void put_bilin_c(pixel *dst, ptrdiff_t dst_stride,
         put_c(dst, dst_stride, src, src_stride, w, h);
 }
 
+#if CONFIG_SUPERRES
 static void put_bilin_scaled_c(pixel *dst, ptrdiff_t dst_stride,
                                const pixel *src, ptrdiff_t src_stride,
                                const int w, int h, const int mx, int my,
@@ -529,6 +562,8 @@ static void put_bilin_scaled_c(pixel *dst, ptrdiff_t dst_stride,
         dst += PXSTRIDE(dst_stride);
     } while (--h);
 }
+
+#endif /* CONFIG_SUPERRES */
 
 static void prep_bilin_c(int16_t *tmp,
                          const pixel *src, ptrdiff_t src_stride,
@@ -585,6 +620,7 @@ static void prep_bilin_c(int16_t *tmp,
         prep_c(tmp, src, src_stride, w, h HIGHBD_TAIL_SUFFIX);
 }
 
+#if CONFIG_SUPERRES
 static void prep_bilin_scaled_c(int16_t *tmp,
                                 const pixel *src, ptrdiff_t src_stride,
                                 const int w, int h, const int mx, int my,
@@ -624,6 +660,8 @@ static void prep_bilin_scaled_c(int16_t *tmp,
         tmp += w;
     } while (--h);
 }
+
+#endif /* CONFIG_SUPERRES */
 
 static void avg_c(pixel *dst, const ptrdiff_t dst_stride,
                   const int16_t *tmp1, const int16_t *tmp2, const int w, int h
@@ -917,6 +955,7 @@ static void emu_edge_c(const intptr_t bw, const intptr_t bh,
     }
 }
 
+#if CONFIG_SUPERRES
 static void resize_c(pixel *dst, const ptrdiff_t dst_stride,
                      const pixel *src, const ptrdiff_t src_stride,
                      const int dst_w, int h, const int src_w,
@@ -944,6 +983,7 @@ static void resize_c(pixel *dst, const ptrdiff_t dst_stride,
         src += PXSTRIDE(src_stride);
     } while (--h);
 }
+#endif /* CONFIG_SUPERRES */
 
 #if HAVE_ASM
 #if ARCH_AARCH64 || ARCH_ARM
@@ -960,12 +1000,19 @@ static void resize_c(pixel *dst, const ptrdiff_t dst_stride,
 #endif
 
 COLD void bitfn(dav1d_mc_dsp_init)(Dav1dMCDSPContext *const c) {
+#if CONFIG_SUPERRES
 #define init_mc_fns(type, name) do { \
     c->mc        [type] = put_##name##_c; \
     c->mc_scaled [type] = put_##name##_scaled_c; \
     c->mct       [type] = prep_##name##_c; \
     c->mct_scaled[type] = prep_##name##_scaled_c; \
 } while (0)
+#else
+#define init_mc_fns(type, name) do { \
+    c->mc        [type] = put_##name##_c; \
+    c->mct       [type] = prep_##name##_c; \
+} while (0)
+#endif
 
     init_mc_fns(FILTER_2D_8TAP_REGULAR,        8tap_regular);
     init_mc_fns(FILTER_2D_8TAP_REGULAR_SMOOTH, 8tap_regular_smooth);
@@ -992,7 +1039,9 @@ COLD void bitfn(dav1d_mc_dsp_init)(Dav1dMCDSPContext *const c) {
     c->warp8x8  = warp_affine_8x8_c;
     c->warp8x8t = warp_affine_8x8t_c;
     c->emu_edge = emu_edge_c;
+#if CONFIG_SUPERRES
     c->resize   = resize_c;
+#endif
 
 #if HAVE_ASM
 #if ARCH_AARCH64 || ARCH_ARM

@@ -308,8 +308,10 @@ HV_JMP_TABLE prep, bilin, ssse3, 7,    4, 8, 16, 32, 64, 128
     %endrep
 %endmacro
 
+%if CONFIG_SUPERRES ; scaled_jmp
 SCALED_JMP_TABLE put_8tap_scaled, ssse3, 2, 4, 8, 16, 32, 64, 128
 SCALED_JMP_TABLE prep_8tap_scaled, ssse3,   4, 8, 16, 32, 64, 128
+%endif ; CONFIG_SUPERRES scaled_jmp
 
 %define table_offset(type, fn) type %+ fn %+ SUFFIX %+ _table - type %+ SUFFIX
 
@@ -7951,6 +7953,7 @@ INIT_XMM ssse3
 %undef isprep
 %endmacro
 
+%if CONFIG_SUPERRES ; scaled_fns
 %macro BILIN_SCALED_FN 1
 cglobal %1_bilin_scaled_8bpc
     mov                 t0d, (5*15 << 16) | 5*15
@@ -7997,6 +8000,7 @@ PREP_8TAP_SCALED_FN smooth_regular, SMOOTH,  REGULAR, prep_8tap_scaled_8bpc
 PREP_8TAP_SCALED_FN regular_smooth, REGULAR, SMOOTH,  prep_8tap_scaled_8bpc
 PREP_8TAP_SCALED_FN regular,        REGULAR, REGULAR
 MC_8TAP_SCALED prep
+%endif ; CONFIG_SUPERRES scaled_fns
 
 %if ARCH_X86_32
  %macro SAVE_ALPHA_BETA 0
@@ -9923,6 +9927,7 @@ cglobal emu_edge_8bpc, 10, 13, 2, bw, bh, iw, ih, x, \
 %undef reg_blkm
 %undef reg_tmp
 
+%if CONFIG_SUPERRES ; resize
 cextern resize_filter
 
 %macro SCRATCH 3
@@ -10140,6 +10145,7 @@ cglobal resize_8bpc, 0, 6, 8, 3 * 16, dst, dst_stride, src, src_stride, \
     jg .loop_y
     RET
 
+%endif ; CONFIG_SUPERRES resize
 INIT_XMM ssse3
 WARP_AFFINE_8X8
 

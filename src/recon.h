@@ -83,8 +83,10 @@ decl_filter_sbrow_fn(dav1d_filter_sbrow_deblock_rows_8bpc);
 decl_filter_sbrow_fn(dav1d_filter_sbrow_deblock_rows_16bpc);
 void dav1d_filter_sbrow_cdef_8bpc(Dav1dTaskContext *tc, int sby);
 void dav1d_filter_sbrow_cdef_16bpc(Dav1dTaskContext *tc, int sby);
+#if CONFIG_SUPERRES
 decl_filter_sbrow_fn(dav1d_filter_sbrow_resize_8bpc);
 decl_filter_sbrow_fn(dav1d_filter_sbrow_resize_16bpc);
+#endif
 decl_filter_sbrow_fn(dav1d_filter_sbrow_lr_8bpc);
 decl_filter_sbrow_fn(dav1d_filter_sbrow_lr_16bpc);
 

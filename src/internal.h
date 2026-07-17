@@ -259,7 +259,9 @@ struct Dav1dFrameContext {
         filter_sbrow_fn filter_sbrow_deblock_cols;
         filter_sbrow_fn filter_sbrow_deblock_rows;
         void (*filter_sbrow_cdef)(Dav1dTaskContext *tc, int sby);
+#if CONFIG_SUPERRES
         filter_sbrow_fn filter_sbrow_resize;
+#endif
         filter_sbrow_fn filter_sbrow_lr;
         backup_ipred_edge_fn backup_ipred_edge;
         read_coef_blocks_fn read_coef_blocks;

@@ -651,6 +651,7 @@ const int8_t ALIGN(dav1d_mc_warp_filter[193][8], 8) = {
     { 0, 0, 0,   0,   2, 127,  -1, 0 },
 };
 
+#if CONFIG_SUPERRES
 ATTR_MCMODEL_SMALL
 const int8_t ALIGN(dav1d_resize_filter[64][8], 8) = {
     { 0,  0,  0, -128,    0,  0,  0, 0 }, { 0,  0,  1, -128,   -2,  1,  0, 0 },
@@ -686,6 +687,8 @@ const int8_t ALIGN(dav1d_resize_filter[64][8], 8) = {
     { 0, -1,  3,   -8, -126,  6, -2, 0 }, { 0, -1,  3,   -6, -127,  4, -1, 0 },
     { 0, -1,  2,   -4, -127,  3, -1, 0 }, { 0,  0,  1,   -2, -128,  1,  0, 0 },
 };
+
+#endif /* CONFIG_SUPERRES */
 
 const uint8_t ALIGN(dav1d_sm_weights[128], 16) = {
     // Unused, because we always offset by bs, which is at least 2.

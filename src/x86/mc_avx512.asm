@@ -171,10 +171,12 @@ bilin_h_shuf4:  db  0,  1,  1,  2,  2,  3,  3,  4,  8,  9,  9, 10, 10, 11, 11, 1
 bilin_v_shuf4:  db  0,  4,  1,  5,  2,  6,  3,  7,  4,  8,  5,  9,  6, 10,  7, 11
 blend_shuf:     db  0,  1,  0,  1,  0,  1,  0,  1,  2,  3,  2,  3,  2,  3,  2,  3
 rescale_mul:    dd  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+%if CONFIG_SUPERRES ; resize_rodata
 resize_permA:   dd  0,  2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30
 resize_permB:   dd  1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31
 resize_permC:   dd  0,  4,  8, 12
 resize_shuf:    db  0,  0,  0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  7,  7,  7,  7
+%endif ; CONFIG_SUPERRES resize_rodata
 pb_02461357:    db  0,  2,  4,  6,  1,  3,  5,  7
 
 wm_420_perm64:  dq 0xfedcba9876543210
@@ -203,7 +205,9 @@ pd_512:             dd 512
 cextern mc_subpel_filters
 %define subpel_filters (mangle(private_prefix %+ _mc_subpel_filters)-8)
 cextern mc_warp_filter
+%if CONFIG_SUPERRES
 cextern resize_filter
+%endif
 
 %macro BASE_JMP_TABLE 3-*
     %xdefine %1_%2_table (%%table - %3)
@@ -5441,6 +5445,7 @@ cglobal blend_h_8bpc, 3, 7, 6, dst, ds, tmp, w, h, mask
     jl .w128
     RET
 
+%if CONFIG_SUPERRES ; resize
 cglobal resize_8bpc, 6, 12, 19, dst, dst_stride, src, src_stride, \
                                 dst_w, h, src_w, dx, mx0
     sub          dword mx0m, 4<<14
@@ -5523,5 +5528,6 @@ cglobal resize_8bpc, 6, 12, 19, dst, dst_stride, src, src_stride, \
     dec                  hd
     jg .loop_y
     RET
+%endif ; CONFIG_SUPERRES resize
 
 %endif ; ARCH_X86_64

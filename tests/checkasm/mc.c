@@ -778,8 +778,10 @@ void bitfn(checkasm_check_mc)(void) {
 
     check_mc(&c);
     check_mct(&c);
+#if CONFIG_SUPERRES
     check_mc_scaled(&c);
     check_mct_scaled(&c);
+#endif
     check_avg(&c);
     check_w_avg(&c);
     check_mask(&c);
@@ -790,5 +792,7 @@ void bitfn(checkasm_check_mc)(void) {
     check_warp8x8(&c);
     check_warp8x8t(&c);
     check_emuedge(&c);
+#if CONFIG_SUPERRES
     check_resize(&c);
+#endif
 }

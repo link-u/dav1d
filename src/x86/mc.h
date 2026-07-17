@@ -48,6 +48,8 @@ decl_8tap_fns(avx512icl);
 decl_fn(mc, dav1d_put_bilin);
 decl_fn(mct, dav1d_prep_bilin);
 
+/* CONFIG_SUPERRES mc */
+#if CONFIG_SUPERRES
 decl_fn(mc_scaled, dav1d_put_8tap_scaled_regular);
 decl_fn(mc_scaled, dav1d_put_8tap_scaled_regular_smooth);
 decl_fn(mc_scaled, dav1d_put_8tap_scaled_regular_sharp);
@@ -70,6 +72,8 @@ decl_fn(mct_scaled, dav1d_prep_8tap_scaled_sharp_regular);
 decl_fn(mct_scaled, dav1d_prep_8tap_scaled_sharp_smooth);
 decl_fn(mct_scaled, dav1d_prep_bilin_scaled);
 
+#endif
+
 decl_fn(avg, dav1d_avg);
 decl_fn(w_avg, dav1d_w_avg);
 decl_fn(mask, dav1d_mask);
@@ -89,7 +93,9 @@ decl_warp8x8t_fn(BF(dav1d_warp_affine_8x8t, sse4));
 
 decl_fn(emu_edge, dav1d_emu_edge);
 
+#if CONFIG_SUPERRES
 decl_fn(resize, dav1d_resize);
+#endif
 
 static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     const unsigned flags = dav1d_get_cpu_flags();
@@ -102,6 +108,7 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     init_mc_fn(FILTER_2D_BILINEAR,             bilin,               ssse3);
     init_mct_fn(FILTER_2D_BILINEAR,            bilin,               ssse3);
 
+#if CONFIG_SUPERRES
     init_mc_scaled_fn(FILTER_2D_8TAP_REGULAR,        8tap_scaled_regular,        ssse3);
     init_mc_scaled_fn(FILTER_2D_8TAP_REGULAR_SMOOTH, 8tap_scaled_regular_smooth, ssse3);
     init_mc_scaled_fn(FILTER_2D_8TAP_REGULAR_SHARP,  8tap_scaled_regular_sharp,  ssse3);
@@ -124,6 +131,8 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     init_mct_scaled_fn(FILTER_2D_8TAP_SHARP,          8tap_scaled_sharp,          ssse3);
     init_mct_scaled_fn(FILTER_2D_BILINEAR,            bilin_scaled,               ssse3);
 
+#endif
+
     c->avg = BF(dav1d_avg, ssse3);
     c->w_avg = BF(dav1d_w_avg, ssse3);
     c->mask = BF(dav1d_mask, ssse3);
@@ -138,7 +147,9 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     c->warp8x8  = BF(dav1d_warp_affine_8x8, ssse3);
     c->warp8x8t = BF(dav1d_warp_affine_8x8t, ssse3);
     c->emu_edge = BF(dav1d_emu_edge, ssse3);
+#if CONFIG_SUPERRES
     c->resize = BF(dav1d_resize, ssse3);
+#endif
 
     if(!(flags & DAV1D_X86_CPU_FLAG_SSE41))
         return;
@@ -157,6 +168,7 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     init_mc_fn(FILTER_2D_BILINEAR,            bilin,               avx2);
     init_mct_fn(FILTER_2D_BILINEAR,           bilin,               avx2);
 
+#if CONFIG_SUPERRES
     init_mc_scaled_fn(FILTER_2D_8TAP_REGULAR,        8tap_scaled_regular,        avx2);
     init_mc_scaled_fn(FILTER_2D_8TAP_REGULAR_SMOOTH, 8tap_scaled_regular_smooth, avx2);
     init_mc_scaled_fn(FILTER_2D_8TAP_REGULAR_SHARP,  8tap_scaled_regular_sharp,  avx2);
@@ -179,6 +191,8 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     init_mct_scaled_fn(FILTER_2D_8TAP_SHARP,          8tap_scaled_sharp,          avx2);
     init_mct_scaled_fn(FILTER_2D_BILINEAR,            bilin_scaled,               avx2);
 
+#endif
+
     c->avg = BF(dav1d_avg, avx2);
     c->w_avg = BF(dav1d_w_avg, avx2);
     c->mask = BF(dav1d_mask, avx2);
@@ -193,7 +207,9 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     c->warp8x8  = BF(dav1d_warp_affine_8x8, avx2);
     c->warp8x8t = BF(dav1d_warp_affine_8x8t, avx2);
     c->emu_edge = BF(dav1d_emu_edge, avx2);
+#if CONFIG_SUPERRES
     c->resize = BF(dav1d_resize, avx2);
+#endif
 
     if (!(flags & DAV1D_X86_CPU_FLAG_AVX512ICL))
         return;
@@ -216,7 +232,9 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     c->blend_h = BF(dav1d_blend_h, avx512icl);
 
     if (!(flags & DAV1D_X86_CPU_FLAG_SLOW_GATHER)) {
+#if CONFIG_SUPERRES
         c->resize = BF(dav1d_resize, avx512icl);
+#endif
         c->warp8x8  = BF(dav1d_warp_affine_8x8, avx512icl);
         c->warp8x8t = BF(dav1d_warp_affine_8x8t, avx512icl);
     }

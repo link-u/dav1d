@@ -93,7 +93,9 @@ pq_0x40000000:   dq 0x40000000
 
 cextern mc_subpel_filters
 cextern mc_warp_filter2
+%if CONFIG_SUPERRES
 cextern resize_filter
+%endif
 cextern z_filter_s
 
 %define subpel_filters (mangle(private_prefix %+ _mc_subpel_filters)-8)
@@ -188,8 +190,10 @@ HV_JMP_TABLE     put,  6tap,  avx2,  3, 2, 4, 8, 16, 32, 64, 128
 HV_JMP_TABLE     put,  8tap,  avx2,  3, 2, 4, 8, 16, 32, 64, 128
 HV_JMP_TABLE     prep, 6tap,  avx2,  1,    4, 8, 16, 32, 64, 128
 HV_JMP_TABLE     prep, 8tap,  avx2,  1,    4, 8, 16, 32, 64, 128
+%if CONFIG_SUPERRES ; scaled_jmp
 SCALED_JMP_TABLE put_8tap_scaled, avx2, 2, 4, 8, 16, 32, 64, 128
 SCALED_JMP_TABLE prep_8tap_scaled, avx2,   4, 8, 16, 32, 64, 128
+%endif ; CONFIG_SUPERRES scaled_jmp
 BIDIR_JMP_TABLE  avg, avx2,                4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE  w_avg, avx2,              4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE  mask, avx2,               4, 8, 16, 32, 64, 128
@@ -4902,6 +4906,7 @@ cglobal prep_8tap_scaled_8bpc, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, d
 %undef isprep
 %endmacro
 
+%if CONFIG_SUPERRES ; scaled_fns
 %macro BILIN_SCALED_FN 1
 cglobal %1_bilin_scaled_8bpc
     mov                 t0d, (5*15 << 16) | 5*15
@@ -4947,6 +4952,7 @@ PREP_8TAP_SCALED_FN smooth_regular, SMOOTH,  REGULAR, prep_8tap_scaled_8bpc
 PREP_8TAP_SCALED_FN regular_smooth, REGULAR, SMOOTH,  prep_8tap_scaled_8bpc
 PREP_8TAP_SCALED_FN regular,        REGULAR, REGULAR
 MC_8TAP_SCALED prep
+%endif ; CONFIG_SUPERRES scaled_fns
 
 %macro WARP_V 5 ; dst, 02, 46, 13, 57
     ; Can be done using gathers, but that's terribly slow on many CPU:s
@@ -5919,6 +5925,7 @@ cglobal emu_edge_8bpc, 10, 13, 1, bw, bh, iw, ih, x, y, dst, dstride, src, sstri
 .end:
     RET
 
+%if CONFIG_SUPERRES ; resize
 cglobal resize_8bpc, 6, 12, 16, dst, dst_stride, src, src_stride, \
                                 dst_w, h, src_w, dx, mx0
     sub          dword mx0m, 4<<14
@@ -6053,6 +6060,7 @@ cglobal resize_8bpc, 6, 12, 16, dst, dst_stride, src, src_stride, \
     jg .loop_y
     RET
 
+%endif ; CONFIG_SUPERRES resize
 cglobal w_mask_420_8bpc, 4, 8, 14, dst, stride, tmp1, tmp2, w, h, mask, stride3
 %define base r7-w_mask_420_avx2_table
     lea                  r7, [w_mask_420_avx2_table]

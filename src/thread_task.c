@@ -218,7 +218,11 @@ static int create_filter_sbrow(Dav1dFrameContext *const f,
     const int has_deblock = f->frame_hdr->loopfilter.level_y[0] ||
                             f->frame_hdr->loopfilter.level_y[1];
     const int has_cdef = f->seq_hdr->cdef;
+#if CONFIG_SUPERRES
     const int has_resize = f->frame_hdr->width[0] != f->frame_hdr->width[1];
+#else
+    const int has_resize = 0;
+#endif
     const int has_lr = f->lf.restore_planes;
 
     Dav1dTask *tasks = f->task_thread.tasks;
@@ -845,9 +849,11 @@ void *dav1d_worker_task(void *data) {
             }
             // fall-through
         case DAV1D_TASK_TYPE_SUPER_RESOLUTION:
+#if CONFIG_SUPERRES
             if (f->frame_hdr->width[0] != f->frame_hdr->width[1])
                 if (!atomic_load(&f->task_thread.error))
                     f->bd_fn.filter_sbrow_resize(f, sby);
+#endif
             // fall-through
         case DAV1D_TASK_TYPE_LOOP_RESTORATION:
             if (!atomic_load(&f->task_thread.error) && f->lf.restore_planes)

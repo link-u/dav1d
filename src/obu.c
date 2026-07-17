@@ -212,6 +212,10 @@ static NOINLINE int parse_seq_hdr(Dav1dSequenceHeader *const hdr,
             hdr->order_hint_n_bits = dav1d_get_bits(gb, 3) + 1;
     }
     hdr->super_res = dav1d_get_bit(gb);
+#if !CONFIG_SUPERRES
+    if (hdr->super_res)
+        return DAV1D_ERR(ENOPROTOOPT);
+#endif
     hdr->cdef = dav1d_get_bit(gb);
     hdr->restoration = dav1d_get_bit(gb);
 #if DEBUG_SEQ_HDR

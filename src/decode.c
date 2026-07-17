@@ -3323,11 +3323,13 @@ int dav1d_decode_frame(Dav1dFrameContext *const f) {
     return res;
 }
 
+#if CONFIG_SUPERRES
 static int get_upscale_x0(const int in_w, const int out_w, const int step) {
     const int err = out_w * step - (in_w << 14);
     const int x0 = (-((out_w - in_w) << 13) + (out_w >> 1)) / out_w + 128 - (err / 2);
     return x0 & 0x3fff;
 }
+#endif
 
 int dav1d_submit_frame(Dav1dContext *const c) {
     Dav1dFrameContext *f;
@@ -3427,6 +3429,13 @@ int dav1d_submit_frame(Dav1dContext *const c) {
         }
     }
 
+#if CONFIG_SUPERRES
+#define CONFIG_SUPERRES_FILTER_SBROW_RESIZE(bd) \
+        f->bd_fn.filter_sbrow_resize = dav1d_filter_sbrow_resize_##bd##bpc;
+#else
+#define CONFIG_SUPERRES_FILTER_SBROW_RESIZE(bd)
+#endif
+
 #define assign_bitdepth_case(bd) \
         f->bd_fn.recon_b_inter = dav1d_recon_b_inter_##bd##bpc; \
         f->bd_fn.recon_b_intra = dav1d_recon_b_intra_##bd##bpc; \
@@ -3434,7 +3443,7 @@ int dav1d_submit_frame(Dav1dContext *const c) {
         f->bd_fn.filter_sbrow_deblock_cols = dav1d_filter_sbrow_deblock_cols_##bd##bpc; \
         f->bd_fn.filter_sbrow_deblock_rows = dav1d_filter_sbrow_deblock_rows_##bd##bpc; \
         f->bd_fn.filter_sbrow_cdef = dav1d_filter_sbrow_cdef_##bd##bpc; \
-        f->bd_fn.filter_sbrow_resize = dav1d_filter_sbrow_resize_##bd##bpc; \
+        CONFIG_SUPERRES_FILTER_SBROW_RESIZE(bd) \
         f->bd_fn.filter_sbrow_lr = dav1d_filter_sbrow_lr_##bd##bpc; \
         f->bd_fn.backup_ipred_edge = dav1d_backup_ipred_edge_##bd##bpc; \
         f->bd_fn.read_coef_blocks = dav1d_read_coef_blocks_##bd##bpc; \
@@ -3454,6 +3463,10 @@ int dav1d_submit_frame(Dav1dContext *const c) {
 #undef assign_bitdepth_case
 
     int ref_coded_width[7];
+#if CONFIG_SUPERRES
+#define scale_fac(ref_sz, this_sz) \
+    ((((ref_sz) << 14) + ((this_sz) >> 1)) / (this_sz))
+#endif
     if (IS_INTER_OR_SWITCH(f->frame_hdr)) {
         if (f->frame_hdr->primary_ref_frame != DAV1D_PRIMARY_REF_NONE) {
             const int pri_ref = f->frame_hdr->refidx[f->frame_hdr->primary_ref_frame];
@@ -3482,14 +3495,19 @@ int dav1d_submit_frame(Dav1dContext *const c) {
             if (f->frame_hdr->width[0] != c->refs[refidx].p.p.p.w ||
                 f->frame_hdr->height != c->refs[refidx].p.p.p.h)
             {
-#define scale_fac(ref_sz, this_sz) \
-    ((((ref_sz) << 14) + ((this_sz) >> 1)) / (this_sz))
+#if !CONFIG_SUPERRES
+                for (int j = 0; j < i; j++)
+                    dav1d_thread_picture_unref(&f->refp[j]);
+                res = DAV1D_ERR(ENOPROTOOPT);
+                goto error;
+#else
                 f->svc[i][0].scale = scale_fac(c->refs[refidx].p.p.p.w,
                                                f->frame_hdr->width[0]);
                 f->svc[i][1].scale = scale_fac(c->refs[refidx].p.p.p.h,
                                                f->frame_hdr->height);
                 f->svc[i][0].step = (f->svc[i][0].scale + 8) >> 4;
                 f->svc[i][1].step = (f->svc[i][1].scale + 8) >> 4;
+#endif
             } else {
                 f->svc[i][0].scale = f->svc[i][1].scale = 0;
             }
@@ -3533,13 +3551,17 @@ int dav1d_submit_frame(Dav1dContext *const c) {
     res = dav1d_thread_picture_alloc(c, f, bpc);
     if (res < 0) goto error;
 
+#if CONFIG_SUPERRES
     if (f->frame_hdr->width[0] != f->frame_hdr->width[1]) {
         res = dav1d_picture_alloc_copy(c, &f->cur, f->frame_hdr->width[0], &f->sr_cur.p);
         if (res < 0) goto error;
-    } else {
+    } else
+#endif
+    {
         dav1d_picture_ref(&f->cur, &f->sr_cur.p);
     }
 
+#if CONFIG_SUPERRES
     if (f->frame_hdr->width[0] != f->frame_hdr->width[1]) {
         f->resize_step[0] = scale_fac(f->cur.p.w, f->sr_cur.p.p.w);
         const int ss_hor = f->cur.p.layout != DAV1D_PIXEL_LAYOUT_I444;
@@ -3550,6 +3572,7 @@ int dav1d_submit_frame(Dav1dContext *const c) {
         f->resize_start[0] = get_upscale_x0(f->cur.p.w, f->sr_cur.p.p.w, f->resize_step[0]);
         f->resize_start[1] = get_upscale_x0(in_cw, out_cw, f->resize_step[1]);
     }
+#endif
 
     // move f->cur into output queue
     if (c->n_fc == 1) {

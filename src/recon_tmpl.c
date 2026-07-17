@@ -1029,6 +1029,7 @@ static int mc(Dav1dTaskContext *const t,
             ref = ((pixel *) refp->p.data[pl]) + PXSTRIDE(ref_stride) * top + left;
         }
 
+#if CONFIG_SUPERRES
         if (dst8 != NULL) {
             f->dsp->mc.mc_scaled[filter_2d](dst8, dst_stride, ref, ref_stride,
                                             bw4 * h_mul, bh4 * v_mul,
@@ -1044,6 +1045,9 @@ static int mc(Dav1dTaskContext *const t,
                                              f->svc[refidx][1].step
                                              HIGHBD_CALL_SUFFIX);
         }
+#else
+        return DAV1D_ERR(ENOPROTOOPT);
+#endif
     }
 
     return 0;
@@ -2050,6 +2054,7 @@ void bytefn(dav1d_filter_sbrow_cdef)(Dav1dTaskContext *const tc, const int sby) 
     bytefn(dav1d_cdef_brow)(tc, p, mask, start, end, 0, sby);
 }
 
+#if CONFIG_SUPERRES
 void bytefn(dav1d_filter_sbrow_resize)(Dav1dFrameContext *const f, const int sby) {
     const int sbsz = f->sb_step;
     const int y = sby * sbsz * 4;
@@ -2085,6 +2090,8 @@ void bytefn(dav1d_filter_sbrow_resize)(Dav1dFrameContext *const f, const int sby
     }
 }
 
+#endif /* CONFIG_SUPERRES */
+
 void bytefn(dav1d_filter_sbrow_lr)(Dav1dFrameContext *const f, const int sby) {
     if (!(f->c->inloop_filters & DAV1D_INLOOPFILTER_RESTORATION)) return;
     const int y = sby * f->sb_step * 4;
@@ -2102,8 +2109,10 @@ void bytefn(dav1d_filter_sbrow)(Dav1dFrameContext *const f, const int sby) {
     bytefn(dav1d_filter_sbrow_deblock_rows)(f, sby);
     if (f->seq_hdr->cdef)
         bytefn(dav1d_filter_sbrow_cdef)(f->c->tc, sby);
+#if CONFIG_SUPERRES
     if (f->frame_hdr->width[0] != f->frame_hdr->width[1])
         bytefn(dav1d_filter_sbrow_resize)(f, sby);
+#endif
     if (f->lf.restore_planes)
         bytefn(dav1d_filter_sbrow_lr)(f, sby);
 }

@@ -97,6 +97,10 @@ cdata_asm.set10('CONFIG_FILMGRAIN', get_option('enable_filmgrain'))
 # Multi-frame decode buffering (out_delayed / n_fc > 1)
 cdata.set10('CONFIG_FRAME_DELAY', get_option('enable_frame_delay'))
 
+# Frame super-resolution / scaled MC / resize
+cdata.set10('CONFIG_SUPERRES', get_option('enable_superres'))
+cdata_asm.set10('CONFIG_SUPERRES', get_option('enable_superres'))
+
 #
 # OS/Compiler checks and defines
 #

@@ -278,6 +278,13 @@ static NOINLINE int parse_seq_hdr(Dav1dSequenceHeader *const hdr,
     }
     if (!hdr->monochrome)
         hdr->separate_uv_delta_q = dav1d_get_bit(gb);
+#if !CONFIG_422_444
+    if (hdr->layout == DAV1D_PIXEL_LAYOUT_I422 ||
+        hdr->layout == DAV1D_PIXEL_LAYOUT_I444)
+    {
+        return DAV1D_ERR(ENOPROTOOPT);
+    }
+#endif
 #if DEBUG_SEQ_HDR
     printf("SEQHDR: post-colorinfo: off=%u\n",
            dav1d_get_bits_pos(gb) - init_bit_pos);

@@ -47,6 +47,7 @@ typedef struct {
     uint8_t ALIGN(wedge_444_8x16 [    16 *  8 * 16], 64);
     uint8_t ALIGN(wedge_444_8x8  [    16 *  8 *  8], 64);
 
+#if CONFIG_422_444
     uint8_t ALIGN(wedge_422_16x32[2 * 16 * 16 * 32], 64);
     uint8_t ALIGN(wedge_422_16x16[2 * 16 * 16 * 16], 64);
     uint8_t ALIGN(wedge_422_16x8 [2 * 16 * 16 *  8], 64);
@@ -56,6 +57,7 @@ typedef struct {
     uint8_t ALIGN(wedge_422_4x32 [2 * 16 *  4 * 32], 64);
     uint8_t ALIGN(wedge_422_4x16 [2 * 16 *  4 * 16], 64);
     uint8_t ALIGN(wedge_422_4x8  [2 * 16 *  4 *  8], 64);
+#endif
 
     uint8_t ALIGN(wedge_420_16x16[2 * 16 * 16 * 16], 64);
     uint8_t ALIGN(wedge_420_16x8 [2 * 16 * 16 *  8], 64);

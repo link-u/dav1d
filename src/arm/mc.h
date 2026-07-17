@@ -46,7 +46,9 @@ decl_blend_dir_fn(BF(dav1d_blend_h, neon));
 decl_blend_dir_fn(BF(dav1d_blend_v, neon));
 
 decl_w_mask_fn(BF(dav1d_w_mask_444, neon));
+#if CONFIG_422_444
 decl_w_mask_fn(BF(dav1d_w_mask_422, neon));
+#endif
 decl_w_mask_fn(BF(dav1d_w_mask_420, neon));
 
 decl_warp8x8_fn(BF(dav1d_warp_affine_8x8, neon));
@@ -75,7 +77,9 @@ static ALWAYS_INLINE void mc_dsp_init_arm(Dav1dMCDSPContext *const c) {
     c->blend_h = BF(dav1d_blend_h, neon);
     c->blend_v = BF(dav1d_blend_v, neon);
     c->w_mask[0] = BF(dav1d_w_mask_444, neon);
+#if CONFIG_422_444
     c->w_mask[1] = BF(dav1d_w_mask_422, neon);
+#endif
     c->w_mask[2] = BF(dav1d_w_mask_420, neon);
     c->warp8x8 = BF(dav1d_warp_affine_8x8, neon);
     c->warp8x8t = BF(dav1d_warp_affine_8x8t, neon);

@@ -45,11 +45,15 @@ decl_w_avg_fn(BF(dav1d_w_avg, rvv));
 decl_mask_fn(BF(dav1d_mask, rvv));
 
 decl_w_mask_fn(BF(dav1d_w_mask_444, rvv));
+#if CONFIG_422_444
 decl_w_mask_fn(BF(dav1d_w_mask_422, rvv));
+#endif
 decl_w_mask_fn(BF(dav1d_w_mask_420, rvv));
 
 decl_w_mask_fn(BF(dav1d_w_mask_444_vl256, rvv));
+#if CONFIG_422_444
 decl_w_mask_fn(BF(dav1d_w_mask_422_vl256, rvv));
+#endif
 decl_w_mask_fn(BF(dav1d_w_mask_420_vl256, rvv));
 
 decl_warp8x8_fn(BF(dav1d_warp_8x8, rvv));
@@ -85,7 +89,9 @@ static ALWAYS_INLINE void mc_dsp_init_riscv(Dav1dMCDSPContext *const c) {
   c->emu_edge = BF(dav1d_emu_edge, rvv);
 
   c->w_mask[0] = BF(dav1d_w_mask_444, rvv);
+#if CONFIG_422_444
   c->w_mask[1] = BF(dav1d_w_mask_422, rvv);
+#endif
   c->w_mask[2] = BF(dav1d_w_mask_420, rvv);
 
   c->avg     = BF(dav1d_avg, rvv);
@@ -101,7 +107,9 @@ static ALWAYS_INLINE void mc_dsp_init_riscv(Dav1dMCDSPContext *const c) {
     c->blend_h = BF(dav1d_blend_h_vl256, rvv);
 
     c->w_mask[0] = BF(dav1d_w_mask_444_vl256, rvv);
+#if CONFIG_422_444
     c->w_mask[1] = BF(dav1d_w_mask_422_vl256, rvv);
+#endif
     c->w_mask[2] = BF(dav1d_w_mask_420_vl256, rvv);
   }
   if (dav1d_get_vlen() >= 512) {

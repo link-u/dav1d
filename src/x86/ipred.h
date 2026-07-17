@@ -63,8 +63,10 @@ decl_fn(cfl_pred, ipred_cfl_top);
 decl_fn(cfl_pred, ipred_cfl_left);
 
 decl_fn(cfl_ac, ipred_cfl_ac_420);
+#if CONFIG_422_444
 decl_fn(cfl_ac, ipred_cfl_ac_422);
 decl_fn(cfl_ac, ipred_cfl_ac_444);
+#endif
 
 decl_fn(pal_pred, pal_pred);
 
@@ -94,8 +96,10 @@ static ALWAYS_INLINE void intra_pred_dsp_init_x86(Dav1dIntraPredDSPContext *cons
     init_cfl_pred_fn(LEFT_DC_PRED, ipred_cfl_left, ssse3);
 
     init_cfl_ac_fn(DAV1D_PIXEL_LAYOUT_I420 - 1, ipred_cfl_ac_420, ssse3);
+#if CONFIG_422_444
     init_cfl_ac_fn(DAV1D_PIXEL_LAYOUT_I422 - 1, ipred_cfl_ac_422, ssse3);
     init_cfl_ac_fn(DAV1D_PIXEL_LAYOUT_I444 - 1, ipred_cfl_ac_444, ssse3);
+#endif
 
     c->pal_pred = BF(dav1d_pal_pred, ssse3);
 
@@ -123,8 +127,10 @@ static ALWAYS_INLINE void intra_pred_dsp_init_x86(Dav1dIntraPredDSPContext *cons
     init_cfl_pred_fn(LEFT_DC_PRED, ipred_cfl_left, avx2);
 
     init_cfl_ac_fn(DAV1D_PIXEL_LAYOUT_I420 - 1, ipred_cfl_ac_420, avx2);
+#if CONFIG_422_444
     init_cfl_ac_fn(DAV1D_PIXEL_LAYOUT_I422 - 1, ipred_cfl_ac_422, avx2);
     init_cfl_ac_fn(DAV1D_PIXEL_LAYOUT_I444 - 1, ipred_cfl_ac_444, avx2);
+#endif
 
     c->pal_pred = BF(dav1d_pal_pred, avx2);
 

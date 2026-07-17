@@ -86,7 +86,9 @@ tap_table:     ; masks for 8 bit shifts
                db  1 * 16 + 0,  2 * 16 + 1
 
 CDEF_FILTER_JMP_TABLE 4x4
+%if CONFIG_422_444
 CDEF_FILTER_JMP_TABLE 4x8
+%endif
 CDEF_FILTER_JMP_TABLE 8x8
 
 SECTION .text
@@ -1561,7 +1563,9 @@ cglobal cdef_filter_%1x%2_8bpc, 5, 11, 0, dst, stride, left, top, bot, \
 %endmacro
 
 CDEF_FILTER 8, 8
+%if CONFIG_422_444
 CDEF_FILTER 4, 8
+%endif
 CDEF_FILTER 4, 4
 
 INIT_YMM avx2

@@ -2,7 +2,9 @@
 #include "src/cdef.h"
 
 decl_cdef_fn(BF(dav1d_cdef_filter_4x4, rvv));
+#if CONFIG_422_444
 decl_cdef_fn(BF(dav1d_cdef_filter_4x8, rvv));
+#endif
 decl_cdef_fn(BF(dav1d_cdef_filter_8x8, rvv));
 
 static ALWAYS_INLINE void cdef_dsp_init_riscv(Dav1dCdefDSPContext *const c) {
@@ -11,6 +13,8 @@ static ALWAYS_INLINE void cdef_dsp_init_riscv(Dav1dCdefDSPContext *const c) {
 
     // c->dir = BF(dav1d_cdef_dir, rvv);
     c->fb[0] = BF(dav1d_cdef_filter_8x8, rvv);
+#if CONFIG_422_444
     c->fb[1] = BF(dav1d_cdef_filter_4x8, rvv);
+#endif
     c->fb[2] = BF(dav1d_cdef_filter_4x4, rvv);
 }

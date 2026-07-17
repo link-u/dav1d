@@ -2084,9 +2084,13 @@ cglobal fguv_32x32xn_i%1_8bpc, 6, 15, 16, dst, src, stride, fg_data, w, scaling,
 
 GEN_GRAIN_UV_FN 420, 1, 1
 FGUV_FN         420, 1, 1
+%if CONFIG_422_444
 GEN_GRAIN_UV_FN 422, 1, 0
+%endif
 FGUV_FN         422, 1, 0
+%if CONFIG_422_444
 GEN_GRAIN_UV_FN 444, 0, 0
+%endif
 FGUV_FN         444, 0, 0
 
 %endif ; ARCH_X86_64

@@ -969,8 +969,12 @@ endfunc
 
 w_mask_fn 444
 w_mask_fn 444 vl256_
+#if CONFIG_422_444
 w_mask_fn 422
+#endif
+#if CONFIG_422_444
 w_mask_fn 422 vl256_
+#endif
 w_mask_fn 420
 w_mask_fn 420 vl256_
 

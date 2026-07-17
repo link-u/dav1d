@@ -233,7 +233,9 @@ static void cdef_filter_block_##w##x##h##_c(pixel *const dst, \
 }
 
 cdef_fn(4, 4);
+#if CONFIG_422_444
 cdef_fn(4, 8);
+#endif
 cdef_fn(8, 8);
 
 static int cdef_find_dir_c(const pixel *img, const ptrdiff_t stride,
@@ -321,7 +323,9 @@ static int cdef_find_dir_c(const pixel *img, const ptrdiff_t stride,
 COLD void bitfn(dav1d_cdef_dsp_init)(Dav1dCdefDSPContext *const c) {
     c->dir = cdef_find_dir_c;
     c->fb[0] = cdef_filter_block_8x8_c;
+#if CONFIG_422_444
     c->fb[1] = cdef_filter_block_4x8_c;
+#endif
     c->fb[2] = cdef_filter_block_4x4_c;
 
 #if HAVE_ASM

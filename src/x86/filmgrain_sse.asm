@@ -3214,10 +3214,14 @@ FGUV_FN 420, 1, 1
 DECLARE_ARG 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
 %endif
 
+%if CONFIG_422_444
 FGUV_FN 422, 1, 0
+%endif
 
 %if STACK_ALIGNMENT < mmsize
 DECLARE_ARG 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
 %endif
 
+%if CONFIG_422_444
 FGUV_FN 444, 0, 0
+%endif

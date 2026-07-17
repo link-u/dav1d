@@ -89,6 +89,11 @@ cdata.set10('CONFIG_LOG', get_option('logging'))
 # Film grain option
 cdata.set10('CONFIG_FILMGRAIN', get_option('enable_filmgrain'))
 
+# 4:2:2 / 4:4:4 pixel layout option (disable keeps 4:0:0 and 4:2:0 only)
+cdata.set10('CONFIG_422_444', get_option('enable_422_444'))
+cdata_asm.set10('CONFIG_422_444', get_option('enable_422_444'))
+cdata_asm.set10('CONFIG_FILMGRAIN', get_option('enable_filmgrain'))
+
 #
 # OS/Compiler checks and defines
 #

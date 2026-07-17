@@ -138,7 +138,9 @@ void bitfn(checkasm_check_cdef)(void) {
     check_cdef_direction(c.dir);
 
     check_cdef_filter(c.fb[0], 8, 8);
+#if CONFIG_422_444
     check_cdef_filter(c.fb[1], 4, 8);
+#endif
     check_cdef_filter(c.fb[2], 4, 4);
     report("cdef_filter");
 }

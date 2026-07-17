@@ -407,7 +407,8 @@ static void check_w_mask(Dav1dMCDSPContext *const c) {
     static const uint8_t ss_hor[] = { 0, 1, 1 };
     static const uint8_t ss_ver[] = { 0, 0, 1 };
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 3; i++) {
+        if (!c->w_mask[i]) continue;
         for (int w = 4; w <= 128; w <<= 1)
             if (check_func(c->w_mask[i], "w_mask_%d_w%d_%dbpc", ss[i], w,
                            BITDEPTH))
@@ -441,6 +442,7 @@ static void check_w_mask(Dav1dMCDSPContext *const c) {
                               a_mask, sign HIGHBD_TAIL_SUFFIX);
                 }
             }
+    }
     report("w_mask");
 }
 

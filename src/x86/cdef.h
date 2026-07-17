@@ -30,8 +30,18 @@
 
 #define decl_cdef_fns(ext) \
     decl_cdef_fn(BF(dav1d_cdef_filter_4x4, ext)); \
-    decl_cdef_fn(BF(dav1d_cdef_filter_4x8, ext)); \
+    CONFIG_422_444_CDEF_DECL(ext) \
     decl_cdef_fn(BF(dav1d_cdef_filter_8x8, ext))
+
+#if CONFIG_422_444
+#define CONFIG_422_444_CDEF_DECL(ext) \
+    decl_cdef_fn(BF(dav1d_cdef_filter_4x8, ext));
+#define CONFIG_422_444_CDEF_INIT(ext) \
+    c->fb[1] = BF(dav1d_cdef_filter_4x8, ext);
+#else
+#define CONFIG_422_444_CDEF_DECL(ext)
+#define CONFIG_422_444_CDEF_INIT(ext)
+#endif
 
 decl_cdef_fns(avx512icl);
 decl_cdef_fns(avx2);
@@ -50,7 +60,7 @@ static ALWAYS_INLINE void cdef_dsp_init_x86(Dav1dCdefDSPContext *const c) {
     if (!(flags & DAV1D_X86_CPU_FLAG_SSE2)) return;
 
     c->fb[0] = BF(dav1d_cdef_filter_8x8, sse2);
-    c->fb[1] = BF(dav1d_cdef_filter_4x8, sse2);
+    CONFIG_422_444_CDEF_INIT(sse2)
     c->fb[2] = BF(dav1d_cdef_filter_4x4, sse2);
 #endif
 
@@ -58,7 +68,7 @@ static ALWAYS_INLINE void cdef_dsp_init_x86(Dav1dCdefDSPContext *const c) {
 
     c->dir = BF(dav1d_cdef_dir, ssse3);
     c->fb[0] = BF(dav1d_cdef_filter_8x8, ssse3);
-    c->fb[1] = BF(dav1d_cdef_filter_4x8, ssse3);
+    CONFIG_422_444_CDEF_INIT(ssse3)
     c->fb[2] = BF(dav1d_cdef_filter_4x4, ssse3);
 
     if (!(flags & DAV1D_X86_CPU_FLAG_SSE41)) return;
@@ -66,7 +76,7 @@ static ALWAYS_INLINE void cdef_dsp_init_x86(Dav1dCdefDSPContext *const c) {
     c->dir = BF(dav1d_cdef_dir, sse4);
 #if BITDEPTH == 8
     c->fb[0] = BF(dav1d_cdef_filter_8x8, sse4);
-    c->fb[1] = BF(dav1d_cdef_filter_4x8, sse4);
+    CONFIG_422_444_CDEF_INIT(sse4)
     c->fb[2] = BF(dav1d_cdef_filter_4x4, sse4);
 #endif
 
@@ -75,13 +85,13 @@ static ALWAYS_INLINE void cdef_dsp_init_x86(Dav1dCdefDSPContext *const c) {
 
     c->dir = BF(dav1d_cdef_dir, avx2);
     c->fb[0] = BF(dav1d_cdef_filter_8x8, avx2);
-    c->fb[1] = BF(dav1d_cdef_filter_4x8, avx2);
+    CONFIG_422_444_CDEF_INIT(avx2)
     c->fb[2] = BF(dav1d_cdef_filter_4x4, avx2);
 
     if (!(flags & DAV1D_X86_CPU_FLAG_AVX512ICL)) return;
 
     c->fb[0] = BF(dav1d_cdef_filter_8x8, avx512icl);
-    c->fb[1] = BF(dav1d_cdef_filter_4x8, avx512icl);
+    CONFIG_422_444_CDEF_INIT(avx512icl)
     c->fb[2] = BF(dav1d_cdef_filter_4x4, avx512icl);
 #endif
 }

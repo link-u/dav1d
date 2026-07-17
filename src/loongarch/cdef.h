@@ -34,7 +34,9 @@
 
 decl_cdef_dir_fn(BF(dav1d_cdef_find_dir, lsx));
 decl_cdef_fn(BF(dav1d_cdef_filter_block_4x4, lsx));
+#if CONFIG_422_444
 decl_cdef_fn(BF(dav1d_cdef_filter_block_4x8, lsx));
+#endif
 decl_cdef_fn(BF(dav1d_cdef_filter_block_8x8, lsx));
 
 static ALWAYS_INLINE void cdef_dsp_init_loongarch(Dav1dCdefDSPContext *const c) {
@@ -45,7 +47,9 @@ static ALWAYS_INLINE void cdef_dsp_init_loongarch(Dav1dCdefDSPContext *const c) 
 #if BITDEPTH == 8
     c->dir = BF(dav1d_cdef_find_dir, lsx);
     c->fb[0] = BF(dav1d_cdef_filter_block_8x8, lsx);
+#if CONFIG_422_444
     c->fb[1] = BF(dav1d_cdef_filter_block_4x8, lsx);
+#endif
     c->fb[2] = BF(dav1d_cdef_filter_block_4x4, lsx);
 #endif
 }

@@ -92,6 +92,10 @@ static void check_gen_grnuv(const Dav1dFilmGrainDSPContext *const dsp) {
                  const Dav1dFilmGrainData *data, intptr_t uv HIGHBD_DECL_SUFFIX);
 
     for (int layout_idx = 0; layout_idx < 3; layout_idx++) {
+#if !CONFIG_422_444
+        if (layout_idx != DAV1D_PIXEL_LAYOUT_I420 - 1)
+            continue;
+#endif
         const enum Dav1dPixelLayout layout = layout_idx + 1;
         const int ss_x = layout != DAV1D_PIXEL_LAYOUT_I444;
         const int ss_y = layout == DAV1D_PIXEL_LAYOUT_I420;
@@ -256,6 +260,10 @@ static void check_fguv_sbrow(const Dav1dFilmGrainDSPContext *const dsp) {
                  int is_identity HIGHBD_DECL_SUFFIX);
 
     for (int layout_idx = 0; layout_idx < 3; layout_idx++) {
+#if !CONFIG_422_444
+        if (layout_idx != DAV1D_PIXEL_LAYOUT_I420 - 1)
+            continue;
+#endif
         const enum Dav1dPixelLayout layout = layout_idx + 1;
         const int ss_x = layout != DAV1D_PIXEL_LAYOUT_I444;
         const int ss_y = layout == DAV1D_PIXEL_LAYOUT_I420;

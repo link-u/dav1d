@@ -150,8 +150,10 @@ static decl_generate_grain_uv_fn(generate_grain_uv_##nm##_c) { \
 }
 
 gnuv_ss_fn(420, 1, 1);
+#if CONFIG_422_444
 gnuv_ss_fn(422, 1, 0);
 gnuv_ss_fn(444, 0, 0);
+#endif
 
 // samples from the correct block of a grain LUT, while taking into account the
 // offsets provided by the offsets cache
@@ -409,8 +411,10 @@ static decl_fguv_32x32xn_fn(fguv_32x32xn_##nm##_c) { \
 }
 
 fguv_ss_fn(420, 1, 1);
+#if CONFIG_422_444
 fguv_ss_fn(422, 1, 0);
 fguv_ss_fn(444, 0, 0);
+#endif
 
 #if HAVE_ASM
 #if ARCH_AARCH64 || ARCH_ARM
@@ -425,13 +429,17 @@ fguv_ss_fn(444, 0, 0);
 COLD void bitfn(dav1d_film_grain_dsp_init)(Dav1dFilmGrainDSPContext *const c) {
     c->generate_grain_y = generate_grain_y_c;
     c->generate_grain_uv[DAV1D_PIXEL_LAYOUT_I420 - 1] = generate_grain_uv_420_c;
+#if CONFIG_422_444
     c->generate_grain_uv[DAV1D_PIXEL_LAYOUT_I422 - 1] = generate_grain_uv_422_c;
     c->generate_grain_uv[DAV1D_PIXEL_LAYOUT_I444 - 1] = generate_grain_uv_444_c;
+#endif
 
     c->fgy_32x32xn = fgy_32x32xn_c;
     c->fguv_32x32xn[DAV1D_PIXEL_LAYOUT_I420 - 1] = fguv_32x32xn_420_c;
+#if CONFIG_422_444
     c->fguv_32x32xn[DAV1D_PIXEL_LAYOUT_I422 - 1] = fguv_32x32xn_422_c;
     c->fguv_32x32xn[DAV1D_PIXEL_LAYOUT_I444 - 1] = fguv_32x32xn_444_c;
+#endif
 
 #if HAVE_ASM
 #if ARCH_AARCH64 || ARCH_ARM

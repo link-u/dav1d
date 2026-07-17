@@ -266,6 +266,7 @@ DECLARE_REG_TMP 2, 7
 ; L8 L9 40 41 42 43 44 45  b0 b1 b2 b3 b4 b5 b6 b7
 ; La Lb 50 51 52 53 54 55  B0 B1 B2 B3 B4 B5 B6 B7
 
+%if CONFIG_422_444
 cglobal cdef_filter_4x8_8bpc, 5, 9, 22, dst, stride, left, top, bot, \
                                         pri, sec, dir, damping, edge
 %define base r8-edge_mask
@@ -500,6 +501,7 @@ ALIGN function_align
 ; b0 b1 b2 b3 b4 b5 b6 b7  b4 b5 b6 b7 b8 b9 ba bb
 ; B0 B1 B2 B3 B4 B5 B6 B7  B4 B5 B6 B7 B8 B9 Ba Bb
 
+%endif
 cglobal cdef_filter_8x8_8bpc, 5, 11, 32, 4*64, dst, stride, left, top, bot, \
                                                pri, sec, dir, damping, edge
 %define base r8-edge_mask

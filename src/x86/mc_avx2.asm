@@ -194,7 +194,9 @@ BIDIR_JMP_TABLE  avg, avx2,                4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE  w_avg, avx2,              4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE  mask, avx2,               4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE  w_mask_420, avx2,         4, 8, 16, 32, 64, 128
+%if CONFIG_422_444
 BIDIR_JMP_TABLE  w_mask_422, avx2,         4, 8, 16, 32, 64, 128
+%endif
 BIDIR_JMP_TABLE  w_mask_444, avx2,         4, 8, 16, 32, 64, 128
 BIDIR_JMP_TABLE  blend, avx2,              4, 8, 16, 32
 BIDIR_JMP_TABLE  blend_v, avx2,         2, 4, 8, 16, 32
@@ -6257,6 +6259,7 @@ cglobal w_mask_420_8bpc, 4, 8, 14, dst, stride, tmp1, tmp2, w, h, mask, stride3
     jg .w128_loop
     RET
 
+%if CONFIG_422_444
 cglobal w_mask_422_8bpc, 4, 8, 11, dst, stride, tmp1, tmp2, w, h, mask, stride3
 %define base r7-w_mask_422_avx2_table
     lea                  r7, [w_mask_422_avx2_table]
@@ -6429,7 +6432,7 @@ cglobal w_mask_422_8bpc, 4, 8, 11, dst, stride, tmp1, tmp2, w, h, mask, stride3
     dec                  hd
     jg .w128_loop
     RET
-
+%endif
 cglobal w_mask_444_8bpc, 4, 8, 8, dst, stride, tmp1, tmp2, w, h, mask, stride3
 %define base r7-w_mask_444_avx2_table
     lea                  r7, [w_mask_444_avx2_table]

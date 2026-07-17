@@ -163,6 +163,11 @@ static void check_cfl_ac(Dav1dIntraPredDSPContext *const c) {
                  int w_pad, int h_pad, int cw, int ch);
 
     for (int layout = 1; layout <= DAV1D_PIXEL_LAYOUT_I444; layout++) {
+#if !CONFIG_422_444
+        if (layout == DAV1D_PIXEL_LAYOUT_I422 ||
+            layout == DAV1D_PIXEL_LAYOUT_I444)
+            continue;
+#endif
         const int ss_ver = layout == DAV1D_PIXEL_LAYOUT_I420;
         const int ss_hor = layout != DAV1D_PIXEL_LAYOUT_I444;
         const int h_step = 2 >> ss_hor, v_step = 2 >> ss_ver;

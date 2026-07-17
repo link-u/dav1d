@@ -56,8 +56,10 @@ void BF(dav1d_generate_grain_uv_ ## suff, neon)(entry buf[][GRAIN_WIDTH], \
                                                 HIGHBD_DECL_SUFFIX)
 
 GEN_GRAIN_UV(420);
+#if CONFIG_422_444
 GEN_GRAIN_UV(422);
 GEN_GRAIN_UV(444);
+#endif
 
 // Use ptrdiff_t instead of int for the last few parameters, to get the
 // same layout of parameters on the stack across platforms.
@@ -184,8 +186,10 @@ fguv_32x32xn_##nm##_neon(pixel *const dst_row, const pixel *const src_row, \
 }
 
 FGUV(420, 1, 1);
+#if CONFIG_422_444
 FGUV(422, 1, 0);
 FGUV(444, 0, 0);
+#endif
 
 static ALWAYS_INLINE void film_grain_dsp_init_arm(Dav1dFilmGrainDSPContext *const c) {
     const unsigned flags = dav1d_get_cpu_flags();
@@ -194,11 +198,15 @@ static ALWAYS_INLINE void film_grain_dsp_init_arm(Dav1dFilmGrainDSPContext *cons
 
     c->generate_grain_y = BF(dav1d_generate_grain_y, neon);
     c->generate_grain_uv[DAV1D_PIXEL_LAYOUT_I420 - 1] = BF(dav1d_generate_grain_uv_420, neon);
+#if CONFIG_422_444
     c->generate_grain_uv[DAV1D_PIXEL_LAYOUT_I422 - 1] = BF(dav1d_generate_grain_uv_422, neon);
     c->generate_grain_uv[DAV1D_PIXEL_LAYOUT_I444 - 1] = BF(dav1d_generate_grain_uv_444, neon);
+#endif
 
     c->fgy_32x32xn = fgy_32x32xn_neon;
     c->fguv_32x32xn[DAV1D_PIXEL_LAYOUT_I420 - 1] = fguv_32x32xn_420_neon;
+#if CONFIG_422_444
     c->fguv_32x32xn[DAV1D_PIXEL_LAYOUT_I422 - 1] = fguv_32x32xn_422_neon;
     c->fguv_32x32xn[DAV1D_PIXEL_LAYOUT_I444 - 1] = fguv_32x32xn_444_neon;
+#endif
 }

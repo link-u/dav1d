@@ -446,7 +446,9 @@ endfunc
 .endm
 
 w_mask_fn 444
+#if CONFIG_422_444
 w_mask_fn 422
+#endif
 w_mask_fn 420
 
 

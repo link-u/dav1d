@@ -807,7 +807,11 @@ ALIGN function_align
 %endmacro
 
 FGUV_FN 420, 1, 1
+%if CONFIG_422_444
 FGUV_FN 422, 1, 0
+%endif
+%if CONFIG_422_444
 FGUV_FN 444, 0, 0
+%endif
 
 %endif ; ARCH_X86_64

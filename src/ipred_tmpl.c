@@ -711,8 +711,10 @@ static void cfl_ac_##fmt##_c(int16_t *const ac, const pixel *const ypx, \
 }
 
 cfl_ac_fn(420, 1, 1)
+#if CONFIG_422_444
 cfl_ac_fn(422, 1, 0)
 cfl_ac_fn(444, 0, 0)
+#endif
 
 static void pal_pred_c(pixel *dst, const ptrdiff_t stride,
                        const pixel *const pal, const uint8_t *idx,
@@ -758,8 +760,10 @@ COLD void bitfn(dav1d_intra_pred_dsp_init)(Dav1dIntraPredDSPContext *const c) {
     c->intra_pred[FILTER_PRED  ] = ipred_filter_c;
 
     c->cfl_ac[DAV1D_PIXEL_LAYOUT_I420 - 1] = cfl_ac_420_c;
+#if CONFIG_422_444
     c->cfl_ac[DAV1D_PIXEL_LAYOUT_I422 - 1] = cfl_ac_422_c;
     c->cfl_ac[DAV1D_PIXEL_LAYOUT_I444 - 1] = cfl_ac_444_c;
+#endif
 
     c->cfl_pred[DC_PRED     ] = ipred_cfl_c;
     c->cfl_pred[DC_128_PRED ] = ipred_cfl_128_c;

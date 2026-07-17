@@ -777,7 +777,9 @@ static void w_mask_##ssn##_c(pixel *const dst, const ptrdiff_t dst_stride, \
 }
 
 w_mask_fns(444, 0, 0);
+#if CONFIG_422_444
 w_mask_fns(422, 1, 0);
+#endif
 w_mask_fns(420, 1, 1);
 
 #undef w_mask_fns
@@ -983,7 +985,9 @@ COLD void bitfn(dav1d_mc_dsp_init)(Dav1dMCDSPContext *const c) {
     c->blend_v  = blend_v_c;
     c->blend_h  = blend_h_c;
     c->w_mask[0] = w_mask_444_c;
+#if CONFIG_422_444
     c->w_mask[1] = w_mask_422_c;
+#endif
     c->w_mask[2] = w_mask_420_c;
     c->warp8x8  = warp_affine_8x8_c;
     c->warp8x8t = warp_affine_8x8t_c;

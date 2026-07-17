@@ -73,7 +73,9 @@ cdef_filter_##w##x##h##_neon(pixel *dst, const ptrdiff_t stride,             \
 }
 
 DEFINE_FILTER(8, 8, 16)
+#if CONFIG_422_444
 DEFINE_FILTER(4, 8, 8)
+#endif
 DEFINE_FILTER(4, 4, 8)
 
 static ALWAYS_INLINE void cdef_dsp_init_arm(Dav1dCdefDSPContext *const c) {
@@ -83,6 +85,8 @@ static ALWAYS_INLINE void cdef_dsp_init_arm(Dav1dCdefDSPContext *const c) {
 
     c->dir = BF(dav1d_cdef_find_dir, neon);
     c->fb[0] = cdef_filter_8x8_neon;
+#if CONFIG_422_444
     c->fb[1] = cdef_filter_4x8_neon;
+#endif
     c->fb[2] = cdef_filter_4x4_neon;
 }

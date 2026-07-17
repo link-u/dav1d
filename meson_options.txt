@@ -45,6 +45,11 @@ option('enable_filmgrain',
     value: true,
     description: 'Enable film grain synthesis DSP and application')
 
+option('enable_422_444',
+    type: 'boolean',
+    value: true,
+    description: 'Enable YUV 4:2:2 and 4:4:4 pixel layouts (disable for 4:0:0/4:2:0 only)')
+
 option('testdata_tests',
     type: 'boolean',
     value: false,

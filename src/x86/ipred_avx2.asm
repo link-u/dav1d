@@ -169,8 +169,12 @@ JMP_TABLE ipred_cfl,        avx2, h4, h8, h16, h32, w4, w8, w16, w32, \
                                   s4-8*4, s8-8*4, s16-8*4, s32-8*4
 JMP_TABLE ipred_cfl_left,   avx2, h4, h8, h16, h32
 JMP_TABLE ipred_cfl_ac_420, avx2, w16_pad1, w16_pad2, w16_pad3
+%if CONFIG_422_444
 JMP_TABLE ipred_cfl_ac_422, avx2, w16_pad1, w16_pad2, w16_pad3
+%endif
+%if CONFIG_422_444
 JMP_TABLE ipred_cfl_ac_444, avx2, w32_pad1, w32_pad2, w32_pad3, w4, w8, w16, w32
+%endif
 JMP_TABLE pal_pred,         avx2, w4, w8, w16, w32, w64
 
 cextern dr_intra_derivative
@@ -4852,6 +4856,7 @@ cglobal ipred_cfl_ac_420_8bpc, 4, 9, 5, ac, y, stride, wpad, hpad, w, h, sz, ac_
     jg .sub_loop
     RET
 
+%if CONFIG_422_444
 cglobal ipred_cfl_ac_422_8bpc, 4, 9, 6, ac, y, stride, wpad, hpad, w, h, sz, ac_bak
     movifnidn         hpadd, hpadm
     movifnidn            wd, wm
@@ -5274,6 +5279,7 @@ cglobal ipred_cfl_ac_444_8bpc, 4, 9, 6, ac, y, stride, wpad, hpad, w, h, sz, ac_
     sub                 szd, 16
     jg .sub_loop
     RET
+%endif
 
 cglobal pal_pred_8bpc, 4, 6, 5, dst, stride, pal, idx, w, h
     vpbroadcastq         m4, [palq]

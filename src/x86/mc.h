@@ -74,7 +74,9 @@ decl_fn(avg, dav1d_avg);
 decl_fn(w_avg, dav1d_w_avg);
 decl_fn(mask, dav1d_mask);
 decl_fn(w_mask, dav1d_w_mask_420);
+#if CONFIG_422_444
 decl_fn(w_mask, dav1d_w_mask_422);
+#endif
 decl_fn(w_mask, dav1d_w_mask_444);
 decl_fn(blend, dav1d_blend);
 decl_fn(blend_dir, dav1d_blend_v);
@@ -126,7 +128,9 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     c->w_avg = BF(dav1d_w_avg, ssse3);
     c->mask = BF(dav1d_mask, ssse3);
     c->w_mask[0] = BF(dav1d_w_mask_444, ssse3);
+#if CONFIG_422_444
     c->w_mask[1] = BF(dav1d_w_mask_422, ssse3);
+#endif
     c->w_mask[2] = BF(dav1d_w_mask_420, ssse3);
     c->blend = BF(dav1d_blend, ssse3);
     c->blend_v = BF(dav1d_blend_v, ssse3);
@@ -179,7 +183,9 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     c->w_avg = BF(dav1d_w_avg, avx2);
     c->mask = BF(dav1d_mask, avx2);
     c->w_mask[0] = BF(dav1d_w_mask_444, avx2);
+#if CONFIG_422_444
     c->w_mask[1] = BF(dav1d_w_mask_422, avx2);
+#endif
     c->w_mask[2] = BF(dav1d_w_mask_420, avx2);
     c->blend = BF(dav1d_blend, avx2);
     c->blend_v = BF(dav1d_blend_v, avx2);
@@ -201,7 +207,9 @@ static ALWAYS_INLINE void mc_dsp_init_x86(Dav1dMCDSPContext *const c) {
     c->w_avg = BF(dav1d_w_avg, avx512icl);
     c->mask = BF(dav1d_mask, avx512icl);
     c->w_mask[0] = BF(dav1d_w_mask_444, avx512icl);
+#if CONFIG_422_444
     c->w_mask[1] = BF(dav1d_w_mask_422, avx512icl);
+#endif
     c->w_mask[2] = BF(dav1d_w_mask_420, avx512icl);
     c->blend = BF(dav1d_blend, avx512icl);
     c->blend_v = BF(dav1d_blend_v, avx512icl);

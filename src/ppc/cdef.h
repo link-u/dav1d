@@ -45,7 +45,9 @@ void dav1d_cdef_filter_##w##x##h##_vsx(pixel *const dst, \
                                        const enum CdefEdgeFlags edges)
 
 cdef_vsx_fn(4, 4);
+#if CONFIG_422_444
 cdef_vsx_fn(4, 8);
+#endif
 cdef_vsx_fn(8, 8);
 
 static ALWAYS_INLINE void cdef_dsp_init_ppc(Dav1dCdefDSPContext *const c) {
@@ -55,7 +57,9 @@ static ALWAYS_INLINE void cdef_dsp_init_ppc(Dav1dCdefDSPContext *const c) {
 
 #if BITDEPTH == 8
     c->fb[0] = dav1d_cdef_filter_8x8_vsx;
+#if CONFIG_422_444
     c->fb[1] = dav1d_cdef_filter_4x8_vsx;
+#endif
     c->fb[2] = dav1d_cdef_filter_4x4_vsx;
 #endif
 }

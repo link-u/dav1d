@@ -148,13 +148,18 @@ static COLD uint16_t init_chroma(uint8_t *chroma, const uint8_t *luma,
 static COLD void fill2d_16x2(const int w, const int h, const enum BlockSize bs,
                              const uint8_t (*const master)[64 * 64],
                              const wedge_code_type *const cb,
-                             uint8_t *masks_444, uint8_t *masks_422,
+                             uint8_t *masks_444,
+#if CONFIG_422_444
+                             uint8_t *masks_422,
+#endif
                              uint8_t *masks_420, unsigned signs)
 {
     const int n_stride_444 = (w * h);
+#if CONFIG_422_444
     const int n_stride_422 = n_stride_444 >> 1;
-    const int n_stride_420 = n_stride_444 >> 2;
     const int sign_stride_422 = 16 * n_stride_422;
+#endif
+    const int n_stride_420 = n_stride_444 >> 2;
     const int sign_stride_420 = 16 * n_stride_420;
 
     // assign pointer offsets in lookup table
@@ -169,10 +174,12 @@ static COLD void fill2d_16x2(const int w, const int h, const enum BlockSize bs,
         dav1d_masks.offsets[0][bs].wedge[0][n] =
         dav1d_masks.offsets[0][bs].wedge[1][n] = MASK_OFFSET(masks_444);
 
+#if CONFIG_422_444
         dav1d_masks.offsets[1][bs].wedge[0][n] =
             init_chroma(&masks_422[ sign * sign_stride_422], masks_444, 0, w, h, 0);
         dav1d_masks.offsets[1][bs].wedge[1][n] =
             init_chroma(&masks_422[!sign * sign_stride_422], masks_444, 1, w, h, 0);
+#endif
         dav1d_masks.offsets[2][bs].wedge[0][n] =
             init_chroma(&masks_420[ sign * sign_stride_420], masks_444, 0, w, h, 1);
         dav1d_masks.offsets[2][bs].wedge[1][n] =
@@ -180,7 +187,9 @@ static COLD void fill2d_16x2(const int w, const int h, const enum BlockSize bs,
 
         signs >>= 1;
         masks_444 += n_stride_444;
+#if CONFIG_422_444
         masks_422 += n_stride_422;
+#endif
         masks_420 += n_stride_420;
     }
 }
@@ -241,8 +250,14 @@ COLD void dav1d_init_ii_wedge_masks(void) {
     fill2d_16x2(w, h, BS_##w##x##h - BS_32x32, \
                 master, wedge_codebook_16_##hvsw, \
                 dav1d_masks.wedge_444_##w##x##h, \
-                dav1d_masks.wedge_422_##sz_422, \
+                CONFIG_422_444_WEDGE(sz_422) \
                 dav1d_masks.wedge_420_##sz_420, signs)
+
+#if CONFIG_422_444
+#define CONFIG_422_444_WEDGE(sz_422) dav1d_masks.wedge_422_##sz_422,
+#else
+#define CONFIG_422_444_WEDGE(sz_422)
+#endif
 
     fill(32, 32, 16x32, 16x16, heqw, 0x7bfb);
     fill(32, 16, 16x16, 16x8,  hltw, 0x7beb);
@@ -254,9 +269,13 @@ COLD void dav1d_init_ii_wedge_masks(void) {
     fill( 8, 16,  4x16,  4x8,  hgtw, 0x7beb);
     fill( 8,  8,  4x8,   4x4,  heqw, 0x7bfb);
 #undef fill
+#undef CONFIG_422_444_WEDGE
 
     memset(dav1d_masks.ii_dc, 32, 32 * 32);
     for (int c = 0; c < 3; c++) {
+#if !CONFIG_422_444
+        if (c == 1) continue;
+#endif
         dav1d_masks.offsets[c][BS_32x32-BS_32x32].ii[II_DC_PRED] =
         dav1d_masks.offsets[c][BS_32x16-BS_32x32].ii[II_DC_PRED] =
         dav1d_masks.offsets[c][BS_16x32-BS_32x32].ii[II_DC_PRED] =
@@ -273,10 +292,17 @@ COLD void dav1d_init_ii_wedge_masks(void) {
 #define ASSIGN_NONDC_II_OFFSET(bs, w444, h444, w422, h422, w420, h420) \
     dav1d_masks.offsets[0][bs-BS_32x32].ii[p + 1] = \
         MASK_OFFSET(&dav1d_masks.ii_nondc_##w444##x##h444[p*w444*h444]); \
-    dav1d_masks.offsets[1][bs-BS_32x32].ii[p + 1] = \
-        MASK_OFFSET(&dav1d_masks.ii_nondc_##w422##x##h422[p*w422*h422]); \
+    CONFIG_422_444_II(bs, w422, h422) \
     dav1d_masks.offsets[2][bs-BS_32x32].ii[p + 1] = \
         MASK_OFFSET(&dav1d_masks.ii_nondc_##w420##x##h420[p*w420*h420])
+
+#if CONFIG_422_444
+#define CONFIG_422_444_II(bs, w422, h422) \
+    dav1d_masks.offsets[1][bs-BS_32x32].ii[p + 1] = \
+        MASK_OFFSET(&dav1d_masks.ii_nondc_##w422##x##h422[p*w422*h422]);
+#else
+#define CONFIG_422_444_II(bs, w422, h422)
+#endif
 
     BUILD_NONDC_II_MASKS(32, 32, 1);
     BUILD_NONDC_II_MASKS(16, 32, 1);
@@ -296,4 +322,6 @@ COLD void dav1d_init_ii_wedge_masks(void) {
         ASSIGN_NONDC_II_OFFSET(BS_8x16,   8, 16,  4, 16,  4,  8);
         ASSIGN_NONDC_II_OFFSET(BS_8x8,    8,  8,  4,  8,  4,  4);
     }
+#undef ASSIGN_NONDC_II_OFFSET
+#undef CONFIG_422_444_II
 }

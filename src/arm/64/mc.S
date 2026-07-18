@@ -29,6 +29,7 @@
 #include "src/arm/asm.S"
 #include "util.S"
 
+#if CONFIG_COMPOUND
 .macro avg dst, t0, t1, t2, t3
         ld1             {\t0\().8h,\t1\().8h},   [x2],  #32
         ld1             {\t2\().8h,\t3\().8h},   [x3],  #32
@@ -861,6 +862,8 @@ endjumptable
 
 // This has got the same signature as the put_8tap functions,
 // and assumes that x8 is set to (clz(w)-24).
+#endif /* CONFIG_COMPOUND */
+
 function put_neon, export=1
         movrel          x9,  put_tbl
         ldrsw           x8,  [x9, x8, lsl #2]
@@ -3256,6 +3259,7 @@ filter_fn       prep, x0, x7, x1, x2, w3, w4, w5, x5, w6, x6, x8, x9, 6,  6tap
 filter_bilin_fn prep, x0, x7, x1, x2, w3, w4, w5, x5, w6, x6, x8, x9, 6
 
 
+#if CONFIG_WARP
 .macro load_filter_row dst, src, inc
         asr             w13, \src, #10
         add             \src, \src, \inc
@@ -3423,6 +3427,8 @@ warp t, 7
 //         const intptr_t x, const intptr_t y,
 //         pixel *dst, const ptrdiff_t dst_stride,
 //         const pixel *ref, const ptrdiff_t ref_stride)
+#endif /* CONFIG_WARP */
+
 function emu_edge_8bpc_neon, export=1
         ldp             x8,  x9,  [sp]
 

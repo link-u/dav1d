@@ -29,6 +29,7 @@
 #include "src/arm/asm.S"
 #include "util.S"
 
+#if CONFIG_COMPOUND
 .macro avg dst0, dst1, t0, t1, t2, t3
         vld1.16         {\t0,\t1},   [r2, :128]!
         vld1.16         {\t2,\t3},   [r3, :128]!
@@ -847,6 +848,8 @@ endfunc
 // This has got the same signature as the put_8tap functions,
 // assumes that the caller has loaded the h argument into r5,
 // and assumes that r8 is set to (clz(w)-24).
+#endif /* CONFIG_COMPOUND */
+
 function put_neon
         adr             r9,  L(put_tbl)
         ldr             r8,  [r9, r8, lsl #2]
@@ -2982,6 +2985,7 @@ filter_fn prep, r0, r7, r1, r2, r3, r4, r5, r6, r8, r9, 6
         vld1.8          {\dst}, [r12, :64]
 .endm
 
+#if CONFIG_WARP
 .macro load_filter_row dst, src, inc
         load_filter_ptr \src
         load_filter_coef \dst, \src, \inc
@@ -3173,6 +3177,8 @@ warp t, 7
 //         const intptr_t x, const intptr_t y,
 //         pixel *dst, const ptrdiff_t dst_stride,
 //         const pixel *ref, const ptrdiff_t ref_stride)
+#endif /* CONFIG_WARP */
+
 function emu_edge_8bpc_neon, export=1
         push            {r4-r11,lr}
         ldrd            r4,  r5,  [sp, #36]

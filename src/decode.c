@@ -46,6 +46,7 @@
 #include "src/filmgrain.h"
 #endif
 #include "src/log.h"
+#include "src/mem.h"
 #include "src/qm.h"
 #include "src/recon.h"
 #include "src/ref.h"
@@ -54,6 +55,32 @@
 #if CONFIG_WARP
 #include "src/warpmv.h"
 #endif
+
+/* MC / IntraBC edge extension buffer; sized for current CONFIG_SUPERRES. */
+static int ensure_emu_edge(Dav1dContext *const c, const int hbd) {
+#if CONFIG_SUPERRES
+    const size_t n = (size_t) 320 * (256 + 7);
+#else
+    const size_t n = (size_t) 192 * (128 + 7);
+#endif
+    for (unsigned i = 0; i < c->n_tc; i++) {
+        Dav1dTaskContext *const t = &c->tc[i];
+#if CONFIG_8BPC
+        if (!hbd && !t->emu_edge_8bpc) {
+            t->emu_edge_8bpc = dav1d_alloc_aligned(ALLOC_THREAD_CTX, n, 64);
+            if (!t->emu_edge_8bpc) return DAV1D_ERR(ENOMEM);
+        }
+#endif
+#if CONFIG_16BPC
+        if (hbd && !t->emu_edge_16bpc) {
+            t->emu_edge_16bpc = dav1d_alloc_aligned(ALLOC_THREAD_CTX,
+                                                    n * sizeof(uint16_t), 64);
+            if (!t->emu_edge_16bpc) return DAV1D_ERR(ENOMEM);
+        }
+#endif
+    }
+    return 0;
+}
 
 static void init_quant_tables(const Dav1dSequenceHeader *const seq_hdr,
                               const Dav1dFrameHeader *const frame_hdr,
@@ -2936,10 +2963,27 @@ int dav1d_decode_frame_init(Dav1dFrameContext *const f) {
     }
 
     // update allocation of block contexts for above
+    f->lf.restore_planes =
+        ((f->frame_hdr->restoration.type[0] != DAV1D_RESTORATION_NONE) << 0) +
+        ((f->frame_hdr->restoration.type[1] != DAV1D_RESTORATION_NONE) << 1) +
+        ((f->frame_hdr->restoration.type[2] != DAV1D_RESTORATION_NONE) << 2);
+    const int need_cdef = f->seq_hdr->cdef;
+    const int need_lr = !!f->lf.restore_planes;
+    /* CDEF with n_tc>1 reuses lr_lpf_line as top/bottom; copy_lpf also writes it. */
+    const int need_lr_line = need_cdef || need_lr;
+
     ptrdiff_t y_stride = f->cur.stride[0], uv_stride = f->cur.stride[1];
     const int has_resize = f->frame_hdr->width[0] != f->frame_hdr->width[1];
     const int need_cdef_lpf_copy = c->n_tc > 1 && has_resize;
-    if (y_stride * f->sbh * 4 != f->lf.cdef_buf_plane_sz[0] ||
+    if (!need_cdef) {
+        if (f->lf.cdef_line_buf) {
+            dav1d_free_aligned(f->lf.cdef_line_buf);
+            f->lf.cdef_line_buf = NULL;
+            f->lf.cdef_buf_plane_sz[0] = f->lf.cdef_buf_plane_sz[1] = 0;
+            f->lf.cdef_buf_sbh = 0;
+            f->lf.need_cdef_lpf_copy = 0;
+        }
+    } else if (y_stride * f->sbh * 4 != f->lf.cdef_buf_plane_sz[0] ||
         uv_stride * f->sbh * 8 != f->lf.cdef_buf_plane_sz[1] ||
         need_cdef_lpf_copy != f->lf.need_cdef_lpf_copy ||
         f->sbh != f->lf.cdef_buf_sbh)
@@ -3000,7 +3044,13 @@ int dav1d_decode_frame_init(Dav1dFrameContext *const f) {
     const int sb128 = f->seq_hdr->sb128;
     const int num_lines = c->n_tc > 1 ? f->sbh * 4 << sb128 : 12;
     y_stride = f->sr_cur.p.stride[0], uv_stride = f->sr_cur.p.stride[1];
-    if (y_stride * num_lines != f->lf.lr_buf_plane_sz[0] ||
+    if (!need_lr_line) {
+        if (f->lf.lr_line_buf) {
+            dav1d_free_aligned(f->lf.lr_line_buf);
+            f->lf.lr_line_buf = NULL;
+            f->lf.lr_buf_plane_sz[0] = f->lf.lr_buf_plane_sz[1] = 0;
+        }
+    } else if (y_stride * num_lines != f->lf.lr_buf_plane_sz[0] ||
         uv_stride * num_lines * 2 != f->lf.lr_buf_plane_sz[1])
     {
         dav1d_free_aligned(f->lf.lr_line_buf);
@@ -3058,7 +3108,13 @@ int dav1d_decode_frame_init(Dav1dFrameContext *const f) {
 
     f->sr_sb128w = (f->sr_cur.p.p.w + 127) >> 7;
     const int lr_mask_sz = f->sr_sb128w * f->sb128h;
-    if (lr_mask_sz != f->lf.lr_mask_sz) {
+    if (!need_lr) {
+        if (f->lf.lr_mask) {
+            dav1d_free(f->lf.lr_mask);
+            f->lf.lr_mask = NULL;
+            f->lf.lr_mask_sz = 0;
+        }
+    } else if (lr_mask_sz != f->lf.lr_mask_sz) {
         dav1d_free(f->lf.lr_mask);
         f->lf.lr_mask = dav1d_malloc(ALLOC_LR, sizeof(*f->lf.lr_mask) * lr_mask_sz);
         if (!f->lf.lr_mask) {
@@ -3067,10 +3123,6 @@ int dav1d_decode_frame_init(Dav1dFrameContext *const f) {
         }
         f->lf.lr_mask_sz = lr_mask_sz;
     }
-    f->lf.restore_planes =
-        ((f->frame_hdr->restoration.type[0] != DAV1D_RESTORATION_NONE) << 0) +
-        ((f->frame_hdr->restoration.type[1] != DAV1D_RESTORATION_NONE) << 1) +
-        ((f->frame_hdr->restoration.type[2] != DAV1D_RESTORATION_NONE) << 2);
     if (f->frame_hdr->loopfilter.sharpness != f->lf.last_sharpness) {
         dav1d_calc_eih(&f->lf.lim_lut, f->frame_hdr->loopfilter.sharpness);
         f->lf.last_sharpness = f->frame_hdr->loopfilter.sharpness;
@@ -3106,6 +3158,7 @@ int dav1d_decode_frame_init(Dav1dFrameContext *const f) {
 
     // init ref mvs
     if (IS_INTER_OR_SWITCH(f->frame_hdr) || f->frame_hdr->allow_intrabc) {
+        if (ensure_emu_edge((Dav1dContext *) c, hbd) < 0) goto error;
         const int ret =
             dav1d_refmvs_init_frame(&f->rf, f->seq_hdr, f->frame_hdr,
                                     f->refpoc, f->mvs, f->refrefpoc, f->ref_mvs,

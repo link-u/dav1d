@@ -301,7 +301,11 @@ COLD int dav1d_open(Dav1dContext **const c_out, const Dav1dSettings *const s) {
         t->f = &c->fc[0];
         t->task_thread.ttd = &c->task_thread;
         t->c = c;
+#if CONFIG_16BPC
         memset(t->cf_16bpc, 0, sizeof(t->cf_16bpc));
+#elif CONFIG_8BPC
+        memset(t->cf_8bpc, 0, sizeof(t->cf_8bpc));
+#endif
         if (c->n_tc > 1) {
             if (pthread_mutex_init(&t->task_thread.td.lock, NULL)) goto error;
             if (pthread_cond_init(&t->task_thread.td.cond, NULL)) {
@@ -667,6 +671,14 @@ static COLD void close_internal(Dav1dContext **const c_out, int flush) {
 #endif
             pthread_cond_destroy(&ttd->cond);
             pthread_mutex_destroy(&ttd->lock);
+        }
+        for (unsigned n = 0; n < c->n_tc; n++) {
+#if CONFIG_8BPC
+            dav1d_free_aligned(c->tc[n].emu_edge_8bpc);
+#endif
+#if CONFIG_16BPC
+            dav1d_free_aligned(c->tc[n].emu_edge_16bpc);
+#endif
         }
         dav1d_free_aligned(c->tc);
     }

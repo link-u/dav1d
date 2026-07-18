@@ -970,7 +970,7 @@ static int mc(Dav1dTaskContext *const t,
             dx + bw4 * h_mul + !!mx * 4 > w ||
             dy + bh4 * v_mul + !!my * 4 > h)
         {
-            pixel *const emu_edge_buf = bitfn(t->scratch.emu_edge);
+            pixel *const emu_edge_buf = bitfn(t->emu_edge);
             f->dsp->mc.emu_edge(bw4 * h_mul + !!mx * 7, bh4 * v_mul + !!my * 7,
                                 w, h, dx - !!mx * 3, dy - !!my * 3,
                                 emu_edge_buf, 192 * sizeof(pixel),
@@ -1022,7 +1022,7 @@ static int mc(Dav1dTaskContext *const t,
         const int w = (refp->p.p.w + ss_hor) >> ss_hor;
         const int h = (refp->p.p.h + ss_ver) >> ss_ver;
         if (left < 3 || top < 3 || right + 4 > w || bottom + 4 > h) {
-            pixel *const emu_edge_buf = bitfn(t->scratch.emu_edge);
+            pixel *const emu_edge_buf = bitfn(t->emu_edge);
             f->dsp->mc.emu_edge(right - left + 7, bottom - top + 7,
                                 w, h, left - 3, top - 3,
                                 emu_edge_buf, 320 * sizeof(pixel),
@@ -1161,7 +1161,7 @@ static int warp_affine(Dav1dTaskContext *const t,
             ptrdiff_t ref_stride = refp->p.stride[!!pl];
 
             if (dx < 3 || dx + 8 + 4 > width || dy < 3 || dy + 8 + 4 > height) {
-                pixel *const emu_edge_buf = bitfn(t->scratch.emu_edge);
+                pixel *const emu_edge_buf = bitfn(t->emu_edge);
                 f->dsp->mc.emu_edge(15, 15, width, height, dx - 3, dy - 3,
                                     emu_edge_buf, 32 * sizeof(pixel),
                                     refp->p.data[pl], ref_stride);

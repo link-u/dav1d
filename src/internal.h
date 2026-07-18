@@ -156,14 +156,18 @@ struct Dav1dContext {
             enum TaskType type;
             atomic_int progress[2]; /* [0]=started, [1]=completed */
             union {
+#if CONFIG_8BPC
                 struct {
                     ALIGN(int8_t grain_lut_8bpc[3][GRAIN_HEIGHT + 1][GRAIN_WIDTH], 16);
                     ALIGN(uint8_t scaling_8bpc[3][256], 64);
                 };
+#endif
+#if CONFIG_16BPC
                 struct {
                     ALIGN(int16_t grain_lut_16bpc[3][GRAIN_HEIGHT + 1][GRAIN_WIDTH], 16);
                     ALIGN(uint8_t scaling_16bpc[3][4096], 64);
                 };
+#endif
             };
         } delayed_fg;
 #endif
@@ -404,38 +408,39 @@ struct Dav1dTaskContext {
     BlockContext l, *a;
     refmvs_tile rt;
     ALIGN(union, 64) {
+#if CONFIG_8BPC
         int16_t cf_8bpc [32 * 32];
+#endif
+#if CONFIG_16BPC
         int32_t cf_16bpc[32 * 32];
+#endif
     };
     union {
+#if CONFIG_8BPC
         uint8_t  al_pal_8bpc [2 /* a/l */][32 /* bx/y4 */][3 /* plane */][8 /* palette_idx */];
+#endif
+#if CONFIG_16BPC
         uint16_t al_pal_16bpc[2 /* a/l */][32 /* bx/y4 */][3 /* plane */][8 /* palette_idx */];
+#endif
     };
     uint8_t pal_sz_uv[2 /* a/l */][32 /* bx4/by4 */];
     ALIGN(union, 64) {
-        struct {
 #if CONFIG_COMPOUND
+        struct {
             union {
+#if CONFIG_8BPC
                 uint8_t  lap_8bpc [128 * 32];
+#endif
+#if CONFIG_16BPC
                 uint16_t lap_16bpc[128 * 32];
+#endif
                 struct {
                     int16_t compinter[2][128 * 128];
                     uint8_t seg_mask[128 * 128];
                 };
             };
-#endif
-            union {
-#if CONFIG_SUPERRES
-                /* stride=192 for non-SVC, or 320 for SVC */
-                uint8_t  emu_edge_8bpc [320 * (256 + 7)];
-                uint16_t emu_edge_16bpc[320 * (256 + 7)];
-#else
-                /* Non-scaled refs only: stride 192, max 128x128 + 7-tap margin */
-                uint8_t  emu_edge_8bpc [192 * (128 + 7)];
-                uint16_t emu_edge_16bpc[192 * (128 + 7)];
-#endif
-            };
         };
+#endif
         struct {
             union {
                 uint8_t levels[32 * 34];
@@ -451,6 +456,7 @@ struct Dav1dTaskContext {
             uint8_t pal_idx_y[32 * 64];
             uint8_t pal_idx_uv[64 * 64]; /* also used as pre-pack scratch buffer */
             union {
+#if CONFIG_8BPC
                 struct {
 #if CONFIG_COMPOUND
                     uint8_t interintra_8bpc[64 * 64];
@@ -458,6 +464,8 @@ struct Dav1dTaskContext {
                     uint8_t edge_8bpc[257];
                     ALIGN(uint8_t pal_8bpc[3 /* plane */][8 /* palette_idx */], 8);
                 };
+#endif
+#if CONFIG_16BPC
                 struct {
 #if CONFIG_COMPOUND
                     uint16_t interintra_16bpc[64 * 64];
@@ -465,9 +473,18 @@ struct Dav1dTaskContext {
                     uint16_t edge_16bpc[257];
                     ALIGN(uint16_t pal_16bpc[3 /* plane */][8 /* palette_idx */], 16);
                 };
+#endif
             };
         };
     } scratch;
+
+    /* Allocated on demand for inter / IntraBC (see ensure_emu_edge). */
+#if CONFIG_8BPC
+    uint8_t *emu_edge_8bpc;
+#endif
+#if CONFIG_16BPC
+    uint16_t *emu_edge_16bpc;
+#endif
 
 #if CONFIG_WARP
     Dav1dWarpedMotionParams warpmv;

@@ -165,8 +165,10 @@ avg_round:        dw -16400, -16400, -16388, -16388
 w_avg_round:      dd 128 + (8192 << 4),  32 + (8192 << 4)
 mask_round:       dd 512 + (8192 << 6), 128 + (8192 << 6)
 w_mask_round:     dd 128, 64
-bidir_shift:      dw  6,  6,  4,  4
 %endif ; CONFIG_COMPOUND compound_rodata2
+%if CONFIG_COMPOUND || CONFIG_WARP
+bidir_shift:      dw  6,  6,  4,  4
+%endif ; CONFIG_COMPOUND || CONFIG_WARP
 
 pb_64:    times 4 db 64
 pw_m512:  times 2 dw -512
@@ -4723,6 +4725,7 @@ DECLARE_REG_TMP 5
 DECLARE_REG_TMP 7
 %endif
 
+%if CONFIG_WARP ; warp_fns
 cglobal warp_affine_8x8t_16bpc, 4, 7, 22, tmp, ts
 %define base r6-pd_0to7
     mov                 t0d, r7m
@@ -4882,6 +4885,7 @@ ALIGN function_align
     vpdpwssd             m0, m4, m6          ; a2 b2
     vpmultishiftqb       m0, m9, m0          ; a a b b
     ret
+%endif ; CONFIG_WARP warp_fns
 
 %if CONFIG_COMPOUND ; compound_fns
 %macro BIDIR_FN 0
